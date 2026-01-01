@@ -255,6 +255,8 @@ nav.scrolled {
   );
   filter: blur(60px);
   animation: orbPulse 8s ease-in-out infinite, orbShift 20s ease-in-out infinite;
+  will-change: transform, opacity;
+  transform: translateZ(0); /* GPU acceleration */
 }
 
 .sunset-orb-secondary {
@@ -275,6 +277,8 @@ nav.scrolled {
   filter: blur(80px);
   animation: orbPulse 12s ease-in-out infinite reverse,
     orbDrift 25s ease-in-out infinite;
+  will-change: transform, opacity;
+  transform: translateZ(0); /* GPU acceleration */
 }
 
 /* Crepuscular Light Rays */
@@ -299,6 +303,8 @@ nav.scrolled {
   );
   animation: raysRotate 60s linear infinite;
   opacity: 0.8;
+  will-change: transform;
+  transform: translateZ(0); /* GPU acceleration */
 }
 
 .light-rays-secondary {
@@ -374,6 +380,8 @@ nav.scrolled {
       transparent 100%
     );
   animation: dustFloat 30s linear infinite;
+  will-change: transform;
+  transform: translateZ(0); /* GPU acceleration */
 }
 
 @keyframes orbPulse {

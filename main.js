@@ -1,12 +1,33 @@
-// Navigation scroll effect
+// Utility: Throttle function for performance
+function throttle(func, limit) {
+    let inThrottle;
+    return function(...args) {
+        if (!inThrottle) {
+            func.apply(this, args);
+            inThrottle = true;
+            setTimeout(() => inThrottle = false, limit);
+        }
+    };
+}
+
+// Utility: Detect mobile devices
+const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) 
+    || window.innerWidth < 768;
+
+// Utility: Detect reduced motion preference
+const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+// Navigation scroll effect (throttled)
 const nav = document.querySelector('nav');
-window.addEventListener('scroll', () => {
+const handleScroll = throttle(() => {
     if (window.scrollY > 50) {
         nav.classList.add('scrolled');
     } else {
         nav.classList.remove('scrolled');
     }
-});
+}, 16); // ~60fps
+
+window.addEventListener('scroll', handleScroll, { passive: true });
 
 // Intersection Observer for reveal animations
 const observerOptions = {
@@ -34,6 +55,12 @@ let mouseX = 0;
 let mouseY = 0;
 let animationId;
 let colorTime = 0;
+
+// Performance state management
+let isPageVisible = !document.hidden;
+let isCanvasVisible = true;
+let isAnimating = false;
+let mouseTrackingEnabled = true;
 
 // Sunset color palette for cycling
 const sunsetColors = [
@@ -132,40 +159,68 @@ class Particle {
 
 function init() {
     particles = [];
-    const numberOfParticles = Math.min((canvas.width * canvas.height) / 15000, 100);
+    // Optimize particle count based on device and preferences
+    let maxParticles = 100;
+    let densityFactor = 15000;
+    
+    if (prefersReducedMotion) {
+        maxParticles = 20; // Minimal particles for reduced motion
+        densityFactor = 30000;
+    } else if (isMobile) {
+        maxParticles = 40; // Reduced for mobile performance
+        densityFactor = 20000;
+    }
+    
+    const numberOfParticles = Math.min(
+        (canvas.width * canvas.height) / densityFactor, 
+        maxParticles
+    );
+    
     for (let i = 0; i < numberOfParticles; i++) {
         particles.push(new Particle());
     }
 }
 
 function connectParticles() {
-    const baseColor = getCurrentSunsetColor();
+    // Adjust connection distance based on device
+    const maxDistance = isMobile ? 100 : 120;
+    const maxDistanceSquared = maxDistance * maxDistance; // Avoid sqrt when possible
     
     for (let a = 0; a < particles.length; a++) {
-        for (let b = a; b < particles.length; b++) {
-            let dx = particles[a].x - particles[b].x;
-            let dy = particles[a].y - particles[b].y;
-            let distance = Math.sqrt(dx * dx + dy * dy);
-
-            if (distance < 120) {
-                let opacity = 1 - (distance / 120);
-                // Blend between the two particles' colors
-                const colorA = getCurrentSunsetColor(particles[a].colorOffset);
-                const colorB = getCurrentSunsetColor(particles[b].colorOffset);
-                const avgColor = interpolateColor(colorA, colorB, 0.5);
-                
-                ctx.strokeStyle = `rgba(${avgColor.r}, ${avgColor.g}, ${avgColor.b}, ${opacity * 0.25})`;
-                ctx.lineWidth = 1;
-                ctx.beginPath();
-                ctx.moveTo(particles[a].x, particles[a].y);
-                ctx.lineTo(particles[b].x, particles[b].y);
-                ctx.stroke();
-            }
+        for (let b = a + 1; b < particles.length; b++) {
+            const dx = particles[a].x - particles[b].x;
+            const dy = particles[a].y - particles[b].y;
+            
+            // Early exit: check squared distance first (avoid expensive sqrt)
+            const distanceSquared = dx * dx + dy * dy;
+            if (distanceSquared > maxDistanceSquared) continue;
+            
+            const distance = Math.sqrt(distanceSquared);
+            const opacity = 1 - (distance / maxDistance);
+            
+            // Blend between the two particles' colors
+            const colorA = getCurrentSunsetColor(particles[a].colorOffset);
+            const colorB = getCurrentSunsetColor(particles[b].colorOffset);
+            const avgColor = interpolateColor(colorA, colorB, 0.5);
+            
+            ctx.strokeStyle = `rgba(${avgColor.r}, ${avgColor.g}, ${avgColor.b}, ${opacity * 0.25})`;
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(particles[a].x, particles[a].y);
+            ctx.lineTo(particles[b].x, particles[b].y);
+            ctx.stroke();
         }
     }
 }
 
 function animate() {
+    // Only animate if page is visible and canvas is in viewport
+    if (!isPageVisible || !isCanvasVisible) {
+        isAnimating = false;
+        return;
+    }
+    
+    isAnimating = true;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
     // Update color time (complete cycle every 20 seconds)
@@ -180,22 +235,76 @@ function animate() {
     animationId = requestAnimationFrame(animate);
 }
 
-// Mouse tracking
-document.addEventListener('mousemove', (e) => {
-    mouseX = e.clientX;
-    mouseY = e.clientY;
+// Start animation only when conditions are met
+function startAnimation() {
+    if (!isAnimating && isPageVisible && isCanvasVisible) {
+        animate();
+    }
+}
+
+// Stop animation and cancel frame
+function stopAnimation() {
+    if (animationId) {
+        cancelAnimationFrame(animationId);
+        animationId = null;
+    }
+    isAnimating = false;
+}
+
+// Mouse tracking (conditional based on animation state)
+const handleMouseMove = (e) => {
+    if (mouseTrackingEnabled && isAnimating) {
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+    }
+};
+
+const handleTouchMove = (e) => {
+    if (mouseTrackingEnabled && isAnimating) {
+        mouseX = e.touches[0].clientX;
+        mouseY = e.touches[0].clientY;
+    }
+};
+
+document.addEventListener('mousemove', handleMouseMove, { passive: true });
+document.addEventListener('touchmove', handleTouchMove, { passive: true });
+
+// Page Visibility API - pause animations when tab is hidden
+document.addEventListener('visibilitychange', () => {
+    isPageVisible = !document.hidden;
+    
+    if (isPageVisible && isCanvasVisible) {
+        startAnimation();
+    } else {
+        stopAnimation();
+    }
 });
 
-// Touch support
-document.addEventListener('touchmove', (e) => {
-    mouseX = e.touches[0].clientX;
-    mouseY = e.touches[0].clientY;
+// Intersection Observer - pause canvas when scrolled out of view
+const canvasObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        isCanvasVisible = entry.isIntersecting;
+        
+        if (isCanvasVisible && isPageVisible) {
+            startAnimation();
+        } else {
+            stopAnimation();
+        }
+    });
+}, { threshold: 0.1 });
+
+canvasObserver.observe(document.querySelector('.hero'));
+
+// Cleanup on page unload
+window.addEventListener('beforeunload', () => {
+    stopAnimation();
+    canvasObserver.disconnect();
 });
 
 // Initialize
 resizeCanvas();
 init();
-animate();
+startAnimation();
 
 // Time-aware sunset intensity
 function updateSunsetIntensity() {
