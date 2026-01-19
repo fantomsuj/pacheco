@@ -66,6 +66,24 @@ body {
   background: var(--text-muted);
 }
 
+/* Skip Link (Accessibility) */
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: 1rem;
+  padding: 0.75rem 1.5rem;
+  background: var(--accent);
+  color: var(--bg-primary);
+  text-decoration: none;
+  font-weight: 600;
+  z-index: 9999;
+  transition: top 0.3s ease;
+}
+
+.skip-link:focus {
+  top: 1rem;
+}
+
 /* Typography */
 h1,
 h2,
@@ -201,6 +219,53 @@ nav.scrolled {
   height: 2px;
   background: var(--text-primary);
   transition: all 0.3s ease;
+}
+
+/* Mobile menu active state - hamburger to X */
+.mobile-menu.active span:nth-child(1) {
+  transform: rotate(45deg) translate(4px, 4px);
+}
+
+.mobile-menu.active span:nth-child(2) {
+  opacity: 0;
+}
+
+.mobile-menu.active span:nth-child(3) {
+  transform: rotate(-45deg) translate(4px, -4px);
+}
+
+/* Mobile navigation overlay */
+@media (max-width: 768px) {
+  .nav-links.mobile-open {
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--bg-primary);
+    padding: 6rem 2rem 2rem;
+    gap: 1.5rem;
+    z-index: 998;
+    animation: slideIn 0.3s var(--ease-out-expo);
+  }
+
+  .nav-links.mobile-open a {
+    font-size: 1.25rem;
+    color: var(--text-primary);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Hero Section */

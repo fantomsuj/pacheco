@@ -29,6 +29,32 @@ const handleScroll = throttle(() => {
 
 window.addEventListener('scroll', handleScroll, { passive: true });
 
+// Mobile menu toggle
+const mobileMenu = document.querySelector('.mobile-menu');
+const navLinks = document.querySelector('.nav-links');
+let isMenuOpen = false;
+
+function toggleMobileMenu() {
+    isMenuOpen = !isMenuOpen;
+    mobileMenu.classList.toggle('active', isMenuOpen);
+    navLinks.classList.toggle('mobile-open', isMenuOpen);
+    document.body.style.overflow = isMenuOpen ? 'hidden' : '';
+}
+
+mobileMenu.addEventListener('click', toggleMobileMenu);
+
+// Close menu when a link is clicked
+navLinks.querySelectorAll('a').forEach(link => {
+    link.addEventListener('click', () => {
+        if (isMenuOpen) toggleMobileMenu();
+    });
+});
+
+// Close menu on escape key
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && isMenuOpen) toggleMobileMenu();
+});
+
 // Intersection Observer for reveal animations
 const observerOptions = {
     threshold: 0.1,
@@ -412,6 +438,13 @@ document.querySelector('.footer-newsletter').addEventListener('submit', (e) => {
         e.target.querySelector('input').value = '';
     }, 2000);
 });
+
+// Dynamic footer year
+const footerText = document.querySelector('.footer-bottom p');
+if (footerText) {
+    const currentYear = new Date().getFullYear();
+    footerText.textContent = footerText.textContent.replace('2024', currentYear);
+}
 
 // Magnetic button effect for primary CTA
 const magneticButtons = document.querySelectorAll('.btn-primary');
