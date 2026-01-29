@@ -456,13 +456,12 @@ window.addEventListener('resize', () => {
 // Smooth scroll for navigation links (using Lenis)
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function(e) {
+        e.preventDefault();
         const href = this.getAttribute('href');
         if (!href || href === '#') return;
 
         const target = document.querySelector(href);
         if (!target) return;
-
-        e.preventDefault();
         lenis.scrollTo(target, {
             offset: 0,
             duration: 1.5,
