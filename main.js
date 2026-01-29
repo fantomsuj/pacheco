@@ -10,13 +10,17 @@ function throttle(func, limit) {
     };
 }
 
+const analyticsDebug = window.location.hostname === 'localhost' ||
+    window.location.hostname === '127.0.0.1';
+
 // Analytics Helper - Track events (wrapper for GA4)
 function trackEvent(eventName, params = {}) {
     if (typeof gtag === 'function') {
         gtag('event', eventName, params);
     }
-    // Console log for development - remove in production
-    console.log('Analytics Event:', eventName, params);
+    if (analyticsDebug) {
+        console.log('Analytics Event:', eventName, params);
+    }
 }
 
 // Utility: Detect mobile devices
@@ -29,6 +33,7 @@ const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)
 // Navigation scroll effect (throttled)
 const nav = document.querySelector('nav');
 const handleScroll = throttle(() => {
+    if (!nav) return;
     if (window.scrollY > 50) {
         nav.classList.add('scrolled');
     } else {
@@ -36,7 +41,9 @@ const handleScroll = throttle(() => {
     }
 }, 16); // ~60fps
 
-window.addEventListener('scroll', handleScroll, { passive: true });
+if (nav) {
+    window.addEventListener('scroll', handleScroll, { passive: true });
+}
 
 // Mobile menu toggle
 const mobileMenu = document.querySelector('.mobile-menu');
@@ -44,6 +51,7 @@ const navLinks = document.querySelector('.nav-links');
 let isMenuOpen = false;
 
 function toggleMobileMenu() {
+    if (!mobileMenu || !navLinks) return;
     isMenuOpen = !isMenuOpen;
     mobileMenu.classList.toggle('active', isMenuOpen);
     navLinks.classList.toggle('mobile-open', isMenuOpen);
@@ -52,19 +60,21 @@ function toggleMobileMenu() {
     mobileMenu.setAttribute('aria-expanded', isMenuOpen.toString());
 }
 
-mobileMenu.addEventListener('click', toggleMobileMenu);
+if (mobileMenu && navLinks) {
+    mobileMenu.addEventListener('click', toggleMobileMenu);
 
-// Close menu when a link is clicked
-navLinks.querySelectorAll('a').forEach(link => {
-    link.addEventListener('click', () => {
-        if (isMenuOpen) toggleMobileMenu();
+    // Close menu when a link is clicked
+    navLinks.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', () => {
+            if (isMenuOpen) toggleMobileMenu();
+        });
     });
-});
 
-// Close menu on escape key
-document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && isMenuOpen) toggleMobileMenu();
-});
+    // Close menu on escape key
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && isMenuOpen) toggleMobileMenu();
+    });
+}
 
 // Update aria-expanded attribute
 function updateMobileMenuAria() {
@@ -136,10 +146,10 @@ document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 
 // Interactive particle network on hero canvas with sunset color cycling
 const canvas = document.getElementById('heroCanvas');
-const ctx = canvas.getContext('2d');
+const ctx = canvas?.getContext?.('2d');
 let particles = [];
-let mouseX = 0;
-let mouseY = 0;
+let mouseX = null;
+let mouseY = null;
 let animationId;
 let colorTime = 0;
 
@@ -147,7 +157,7 @@ let colorTime = 0;
 let isPageVisible = !document.hidden;
 let isCanvasVisible = true;
 let isAnimating = false;
-let mouseTrackingEnabled = true;
+let mouseTrackingEnabled = !prefersReducedMotion;
 
 // Sunset color palette for cycling
 const sunsetColors = [
@@ -182,6 +192,7 @@ function getCurrentSunsetColor(offset = 0) {
 }
 
 function resizeCanvas() {
+    if (!canvas) return;
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 }
@@ -201,29 +212,30 @@ class Particle {
     }
 
     update() {
-        // Mouse interaction
-        let dx = mouseX - this.x;
-        let dy = mouseY - this.y;
-        let distance = Math.sqrt(dx * dx + dy * dy);
-        let forceDirectionX = dx / distance;
-        let forceDirectionY = dy / distance;
-        let maxDistance = 150;
-        let force = (maxDistance - distance) / maxDistance;
-        let directionX = forceDirectionX * force * this.density * 0.5;
-        let directionY = forceDirectionY * force * this.density * 0.5;
+        const maxDistance = 150;
 
-        if (distance < maxDistance) {
-            this.x -= directionX;
-            this.y -= directionY;
-        } else {
-            // Gentle floating motion
-            this.x += this.vx;
-            this.y += this.vy;
-            
-            // Boundary check
-            if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
-            if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+        if (mouseTrackingEnabled && mouseX !== null && mouseY !== null) {
+            const dx = mouseX - this.x;
+            const dy = mouseY - this.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+
+            if (distance > 0 && distance < maxDistance) {
+                const force = (maxDistance - distance) / maxDistance;
+                const directionX = (dx / distance) * force * this.density * 0.5;
+                const directionY = (dy / distance) * force * this.density * 0.5;
+                this.x -= directionX;
+                this.y -= directionY;
+                return;
+            }
         }
+
+        // Gentle floating motion
+        this.x += this.vx;
+        this.y += this.vy;
+
+        // Boundary check
+        if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+        if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
     }
 
     draw() {
@@ -245,6 +257,7 @@ class Particle {
 }
 
 function init() {
+    if (!canvas || !ctx) return;
     particles = [];
     // Optimize particle count based on device and preferences
     let maxParticles = 100;
@@ -269,6 +282,7 @@ function init() {
 }
 
 function connectParticles() {
+    if (!ctx) return;
     // Adjust connection distance based on device
     const maxDistance = isMobile ? 100 : 120;
     const maxDistanceSquared = maxDistance * maxDistance; // Avoid sqrt when possible
@@ -300,7 +314,27 @@ function connectParticles() {
     }
 }
 
+function renderStaticFrame() {
+    if (!ctx) return;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    particles.forEach(particle => {
+        particle.draw();
+    });
+    connectParticles();
+}
+
 function animate() {
+    if (!canvas || !ctx) {
+        isAnimating = false;
+        return;
+    }
+
+    if (prefersReducedMotion) {
+        renderStaticFrame();
+        isAnimating = false;
+        return;
+    }
+
     // Only animate if page is visible and canvas is in viewport
     if (!isPageVisible || !isCanvasVisible) {
         isAnimating = false;
@@ -324,6 +358,11 @@ function animate() {
 
 // Start animation only when conditions are met
 function startAnimation() {
+    if (!canvas || !ctx) return;
+    if (prefersReducedMotion) {
+        renderStaticFrame();
+        return;
+    }
     if (!isAnimating && isPageVisible && isCanvasVisible) {
         animate();
     }
@@ -348,8 +387,10 @@ const handleMouseMove = (e) => {
 
 const handleTouchMove = (e) => {
     if (mouseTrackingEnabled && isAnimating) {
-        mouseX = e.touches[0].clientX;
-        mouseY = e.touches[0].clientY;
+        const touch = e.touches && e.touches[0];
+        if (!touch) return;
+        mouseX = touch.clientX;
+        mouseY = touch.clientY;
     }
 };
 
@@ -380,7 +421,12 @@ const canvasObserver = new IntersectionObserver((entries) => {
     });
 }, { threshold: 0.1 });
 
-canvasObserver.observe(document.querySelector('.hero'));
+const heroSection = document.querySelector('.hero');
+if (heroSection && canvas && ctx) {
+    canvasObserver.observe(heroSection);
+} else {
+    isCanvasVisible = false;
+}
 
 // Cleanup on page unload
 window.addEventListener('beforeunload', () => {
@@ -395,8 +441,10 @@ startAnimation();
 
 // Time-aware sunset intensity
 function updateSunsetIntensity() {
-    const hour = new Date().getHours();
     const sunsetAtmosphere = document.querySelector('.sunset-atmosphere');
+    if (!sunsetAtmosphere) return;
+
+    const hour = new Date().getHours();
     
     // Peak intensity during golden hour (5pm - 8pm)
     let intensity = 1;
@@ -422,6 +470,7 @@ setInterval(updateSunsetIntensity, 300000);
 // Occasional sunbeam flash effect
 function triggerSunbeam() {
     const sunbeam = document.querySelector('.sunbeam-flash');
+    if (!sunbeam || prefersReducedMotion) return;
     sunbeam.classList.remove('active');
     
     // Force reflow
@@ -437,6 +486,7 @@ function triggerSunbeam() {
 
 // Trigger sunbeam randomly between 15-45 seconds
 function scheduleSunbeam() {
+    if (prefersReducedMotion || !document.querySelector('.sunbeam-flash')) return;
     const delay = 15000 + Math.random() * 30000;
     setTimeout(() => {
         triggerSunbeam();
@@ -445,7 +495,9 @@ function scheduleSunbeam() {
 }
 
 // Start sunbeam effect after initial page load
-setTimeout(scheduleSunbeam, 5000);
+if (!prefersReducedMotion) {
+    setTimeout(scheduleSunbeam, 5000);
+}
 
 // Handle resize
 let resizeTimeout;
@@ -454,20 +506,35 @@ window.addEventListener('resize', () => {
     resizeTimeout = setTimeout(() => {
         resizeCanvas();
         init();
+        if (prefersReducedMotion) {
+            renderStaticFrame();
+        }
     }, 250);
 });
 
 // Smooth scroll for navigation links
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function(e) {
-        e.preventDefault();
-        const target = document.querySelector(this.getAttribute('href'));
-        if (target) {
-            target.scrollIntoView({
-                behavior: 'smooth',
-                block: 'start'
+        const href = this.getAttribute('href');
+        if (!href) return;
+
+        if (href === '#') {
+            e.preventDefault();
+            window.scrollTo({
+                top: 0,
+                behavior: prefersReducedMotion ? 'auto' : 'smooth'
             });
+            return;
         }
+
+        const target = document.querySelector(href);
+        if (!target) return;
+
+        e.preventDefault();
+        target.scrollIntoView({
+            behavior: prefersReducedMotion ? 'auto' : 'smooth',
+            block: 'start'
+        });
     });
 });
 
@@ -560,10 +627,10 @@ if (contactForm) {
     contactForm.addEventListener('submit', (e) => {
         e.preventDefault();
 
-        // Validate all fields
-        const isNameValid = validateField(nameInput, 'name');
-        const isEmailValid = validateField(emailInput, 'email');
-        const isOrgValid = validateField(orgInput, 'organization');
+        // Validate all fields (with null checks to prevent runtime errors)
+        const isNameValid = nameInput ? validateField(nameInput, 'name') : false;
+        const isEmailValid = emailInput ? validateField(emailInput, 'email') : false;
+        const isOrgValid = orgInput ? validateField(orgInput, 'organization') : false;
 
         if (!isNameValid || !isEmailValid || !isOrgValid) {
             // Focus the first invalid field
@@ -802,6 +869,7 @@ const reachedMilestones = new Set();
 
 const trackScrollDepth = throttle(() => {
     const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+    if (scrollHeight <= 0) return;
     const scrollPercent = Math.round((window.scrollY / scrollHeight) * 100);
 
     scrollMilestones.forEach(milestone => {
@@ -843,8 +911,9 @@ document.querySelectorAll('section[id]').forEach(section => {
 let pageLoadTime = Date.now();
 window.addEventListener('beforeunload', () => {
     const timeOnPage = Math.round((Date.now() - pageLoadTime) / 1000);
+    const maxReached = reachedMilestones.size ? Math.max(...reachedMilestones) : 0;
     trackEvent('page_exit', {
         time_on_page_seconds: timeOnPage,
-        scroll_depth_reached: Math.max(...reachedMilestones) || 0
+        scroll_depth_reached: maxReached
     });
 });
