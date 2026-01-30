@@ -6,89 +6,157 @@
     <title>Pacheco Ventures | Strategic Advisory for Arizona's Elite</title>
     <meta name="description" content="Pacheco Ventures architects decisive advantage for Arizona's foremost leaders through investor-grade strategy, real-time policy intelligence, and unmatched execution.">
     <meta name="keywords" content="Pacheco Ventures, Strategic Advisory, Arizona, Corporate Strategy, Venture Capital, Public Affairs, Energy Consulting">
-    
+    <meta name="author" content="Pacheco Ventures">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://pacheco.ventures/">
+
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://pacheco.ventures/">
     <meta property="og:title" content="Pacheco Ventures | Strategic Advisory for Arizona's Elite">
     <meta property="og:description" content="Architecting decisive advantage through investor-grade strategy and real-time policy intelligence.">
     <meta property="og:image" content="https://pacheco.ventures/og-image.jpg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:site_name" content="Pacheco Ventures">
+    <meta property="og:locale" content="en_US">
 
     <!-- Twitter -->
-    <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:url" content="https://pacheco.ventures/">
-    <meta property="twitter:title" content="Pacheco Ventures | Strategic Advisory for Arizona's Elite">
-    <meta property="twitter:description" content="Architecting decisive advantage through investor-grade strategy and real-time policy intelligence.">
-    <meta property="twitter:image" content="https://pacheco.ventures/og-image.jpg">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://pacheco.ventures/">
+    <meta name="twitter:title" content="Pacheco Ventures | Strategic Advisory for Arizona's Elite">
+    <meta name="twitter:description" content="Architecting decisive advantage through investor-grade strategy and real-time policy intelligence.">
+    <meta name="twitter:image" content="https://pacheco.ventures/og-image.jpg">
+    <meta name="twitter:creator" content="@pachecoventures">
 
+    <!-- Structured Data - Organization -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "Pacheco Ventures",
+      "url": "https://pacheco.ventures",
+      "logo": "https://pacheco.ventures/logo.png",
+      "description": "Strategic advisory for Arizona's foremost leaders through investor-grade strategy, real-time policy intelligence, and unmatched execution.",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Phoenix",
+        "addressRegion": "AZ",
+        "addressCountry": "US"
+      },
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "telephone": "+1-602-555-1234",
+        "contactType": "sales"
+      },
+      "sameAs": []
+    }
+    </script>
+
+    <!-- Structured Data - LocalBusiness -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "ProfessionalService",
+      "name": "Pacheco Ventures",
+      "image": "https://pacheco.ventures/og-image.jpg",
+      "url": "https://pacheco.ventures",
+      "telephone": "+1-602-555-1234",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Phoenix",
+        "addressRegion": "AZ",
+        "addressCountry": "US"
+      },
+      "priceRange": "$$$",
+      "openingHoursSpecification": {
+        "@type": "OpeningHoursSpecification",
+        "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+        "opens": "09:00",
+        "closes": "18:00"
+      }
+    }
+    </script>
+
+    <!-- Preconnect for performance -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="dns-prefetch" href="https://www.googletagmanager.com">
     <link
       href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Manrope:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="./style.css" />
     <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+
+    <!-- Google Analytics 4 - Replace GA_MEASUREMENT_ID with your actual ID -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=GA_MEASUREMENT_ID"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'GA_MEASUREMENT_ID');
+    </script>
   </head>
   <body>
     <!-- Skip to main content for accessibility -->
     <a href="#main-content" class="skip-link">Skip to main content</a>
     
     <!-- Navigation -->
-    <nav>
+    <nav role="navigation" aria-label="Main navigation">
       <div class="container nav-inner">
-        <a href="#" class="logo">Pacheco<span>.</span></a>
-        <ul class="nav-links">
-          <li><a href="#services">Services</a></li>
-          <li><a href="#approach">Approach</a></li>
-          <li><a href="#results">Results</a></li>
-          <li><a href="#contact">Contact</a></li>
+        <a href="#" class="logo" aria-label="Pacheco Ventures - Home">Pacheco<span>.</span></a>
+        <ul class="nav-links" id="mobile-nav" role="menubar">
+          <li role="none"><a href="#services" role="menuitem">Services</a></li>
+          <li role="none"><a href="#approach" role="menuitem">Approach</a></li>
+          <li role="none"><a href="#results" role="menuitem">Results</a></li>
+          <li role="none"><a href="#contact" role="menuitem">Contact</a></li>
         </ul>
-        <button class="nav-cta">Schedule a Call</button>
-        <div class="mobile-menu">
+        <button class="nav-cta" aria-label="Schedule a consultation call">Schedule a Call</button>
+        <button class="mobile-menu" aria-label="Toggle mobile menu" aria-expanded="false" aria-controls="mobile-nav">
           <span></span>
           <span></span>
           <span></span>
-        </div>
+        </button>
       </div>
     </nav>
 
     <!-- Hero Section -->
-    <section class="hero" id="main-content">
-        <!-- Sunset Atmosphere Layer -->
-        <div class="sunset-atmosphere">
-            <div class="sunset-orb"></div>
-            <div class="sunset-orb-secondary"></div>
-            <div class="light-rays"></div>
-            <div class="light-rays-secondary"></div>
-            <div class="dust-particles"></div>
+    <section class="hero" id="main-content" aria-label="Hero section">
+        <!-- Sunset Atmosphere Layer with Parallax -->
+        <div class="sunset-atmosphere" aria-hidden="true">
+            <div class="sunset-orb" data-parallax data-speed="0.3"></div>
+            <div class="sunset-orb-secondary" data-parallax data-speed="0.2"></div>
+            <div class="light-rays" data-parallax data-speed="0.1"></div>
+            <div class="light-rays-secondary" data-parallax data-speed="0.15"></div>
+            <div class="dust-particles" data-parallax data-speed="0.4"></div>
             <div class="horizon-glow"></div>
             <div class="sunbeam-flash"></div>
         </div>
-        <canvas class="hero-canvas" id="heroCanvas"></canvas>
-        <div class="hero-gradient"></div>
+        <canvas class="hero-canvas" id="heroCanvas" aria-hidden="true"></canvas>
+        <div class="hero-gradient" aria-hidden="true"></div>
         <div class="container hero-content">
-            <span class="hero-eyebrow">Strategic Advisory • Arizona</span>
-            <h1 class="hero-title">Where Influence Becomes <em>Outcome</em></h1>
-            <p class="hero-subtitle">We architect decisive advantage for Arizona's foremost leaders through investor-grade strategy, real-time policy intelligence, and unmatched execution.</p>
-            <div class="hero-actions">
-                <button class="btn-primary">Request Strategic Assessment</button>
-                <button class="btn-secondary">View Our Work</button>
+            <span class="hero-eyebrow" data-parallax data-speed="0.5">Strategic Advisory • Arizona</span>
+            <h1 class="hero-title" data-parallax data-speed="0.3">Where Influence Becomes <em>Outcome</em></h1>
+            <p class="hero-subtitle" data-parallax data-speed="0.2">We architect decisive advantage for Arizona's foremost leaders through investor-grade strategy, real-time policy intelligence, and unmatched execution.</p>
+            <div class="hero-actions" data-parallax data-speed="0.15">
+                <button class="btn-primary" aria-label="Request a strategic assessment consultation">Request Strategic Assessment</button>
+                <button class="btn-secondary" aria-label="View our portfolio of work">View Our Work</button>
             </div>
-            <div class="hero-trust">
+            <div class="hero-trust" data-parallax data-speed="0.1" aria-label="Trusted clients">
                 <p class="hero-trust-label">Trusted by Arizona's Most Influential</p>
-                <div class="trust-logos">
-                    <span class="trust-logo">Arizona Cardinals</span>
-                    <span class="trust-logo">Freeport-McMoRan</span>
-                    <span class="trust-logo">APS Energy</span>
-                    <span class="trust-logo">Phoenix Suns</span>
+                <div class="trust-logos" role="list">
+                    <span class="trust-logo" role="listitem">Arizona Cardinals</span>
+                    <span class="trust-logo" role="listitem">Freeport-McMoRan</span>
+                    <span class="trust-logo" role="listitem">APS Energy</span>
+                    <span class="trust-logo" role="listitem">Phoenix Suns</span>
                 </div>
             </div>
         </div>
     </section>
 
     <!-- Problem/Solution Narrative -->
-    <section class="narrative">
+    <section class="narrative" aria-label="Our approach to solving complex challenges">
       <div class="container">
         <div class="narrative-grid">
           <div class="narrative-content reveal">
@@ -141,11 +209,11 @@
     </section>
 
     <!-- Services Section -->
-    <section class="services" id="services">
+    <section class="services" id="services" aria-labelledby="services-heading">
       <div class="container">
         <div class="section-header reveal">
-          <span class="section-number">01</span>
-          <h2>Strategic Capabilities</h2>
+          <span class="section-number" aria-hidden="true">01</span>
+          <h2 id="services-heading">Strategic Capabilities</h2>
           <p>
             Six integrated disciplines. One unified mission: engineering your
             decisive advantage in Arizona and beyond.
@@ -211,11 +279,11 @@
     </section>
 
     <!-- Differentiators Section -->
-    <section class="differentiators" id="approach">
+    <section class="differentiators" id="approach" aria-labelledby="approach-heading">
       <div class="container">
         <div class="diff-grid">
           <div class="diff-content reveal">
-            <h2>Why the stakes-players choose Pacheco</h2>
+            <h2 id="approach-heading">Why the stakes-players choose Pacheco</h2>
             <p>
               We don't compete with consultants. We replace the gap between
               insight and impact.
@@ -290,11 +358,11 @@
     </section>
 
     <!-- Testimonials Section -->
-    <section class="testimonials" id="results">
+    <section class="testimonials" id="results" aria-labelledby="testimonials-heading">
       <div class="container">
         <div class="section-header reveal">
-          <span class="section-number">02</span>
-          <h2>Voices of Impact</h2>
+          <span class="section-number" aria-hidden="true">02</span>
+          <h2 id="testimonials-heading">Voices of Impact</h2>
           <p>
             When the outcome defines your legacy, you need advisors who deliver.
           </p>
@@ -341,31 +409,77 @@
     </section>
 
     <!-- CTA Section -->
-    <section class="cta-section" id="contact">
+    <section class="cta-section" id="contact" aria-labelledby="cta-heading">
       <div class="container">
         <div class="cta-content reveal">
-          <h2>Ready to architect your <em>decisive advantage?</em></h2>
+          <h2 id="cta-heading">Ready to architect your <em>decisive advantage?</em></h2>
           <p>
             The window for transformative action is always narrower than it
             appears. Let's discuss how Pacheco Ventures can accelerate your most
             critical objectives.
           </p>
-          <form class="cta-form">
-            <input type="text" placeholder="Full Name" required />
-            <input type="email" placeholder="Email Address" required />
-            <input type="text" placeholder="Organization" required />
-            <button type="submit">Request Assessment</button>
+          <form class="cta-form" id="contact-form" novalidate aria-label="Contact request form">
+            <div class="form-group">
+              <label for="contact-name" class="sr-only">Full Name</label>
+              <input
+                type="text"
+                id="contact-name"
+                name="name"
+                placeholder="Full Name"
+                required
+                autocomplete="name"
+                minlength="2"
+                maxlength="100"
+                aria-required="true"
+                aria-describedby="name-error"
+              />
+              <span class="form-error" id="name-error" role="alert" aria-live="polite"></span>
+            </div>
+            <div class="form-group">
+              <label for="contact-email" class="sr-only">Email Address</label>
+              <input
+                type="email"
+                id="contact-email"
+                name="email"
+                placeholder="Email Address"
+                required
+                autocomplete="email"
+                aria-required="true"
+                aria-describedby="email-error"
+              />
+              <span class="form-error" id="email-error" role="alert" aria-live="polite"></span>
+            </div>
+            <div class="form-group">
+              <label for="contact-org" class="sr-only">Organization</label>
+              <input
+                type="text"
+                id="contact-org"
+                name="organization"
+                placeholder="Organization"
+                required
+                autocomplete="organization"
+                minlength="2"
+                maxlength="100"
+                aria-required="true"
+                aria-describedby="org-error"
+              />
+              <span class="form-error" id="org-error" role="alert" aria-live="polite"></span>
+            </div>
+            <button type="submit" aria-label="Submit contact request">Request Assessment</button>
           </form>
+          <div class="form-success" id="form-success" role="status" aria-live="polite" hidden>
+            Thank you! We'll be in touch within 24 hours.
+          </div>
           <p class="cta-alternative">
             Prefer a direct conversation?
-            <a href="tel:+16025551234">Call our principals directly →</a>
+            <a href="tel:+16025551234" aria-label="Call us at 602-555-1234">Call our principals directly →</a>
           </p>
         </div>
       </div>
     </section>
 
     <!-- Footer -->
-    <footer>
+    <footer role="contentinfo">
       <div class="container">
         <div class="footer-grid">
           <div class="footer-brand">
@@ -395,10 +509,19 @@
             </ul>
           </div>
           <div class="footer-column">
-            <h4>Intelligence</h4>
-            <form class="footer-newsletter">
-              <input type="email" placeholder="Enter your email" />
-              <button type="submit">Subscribe</button>
+            <h4 id="newsletter-heading">Intelligence</h4>
+            <form class="footer-newsletter" id="newsletter-form" aria-labelledby="newsletter-heading" novalidate>
+              <label for="newsletter-email" class="sr-only">Email for newsletter</label>
+              <input
+                type="email"
+                id="newsletter-email"
+                name="email"
+                placeholder="Enter your email"
+                required
+                autocomplete="email"
+                aria-required="true"
+              />
+              <button type="submit" aria-label="Subscribe to newsletter">Subscribe</button>
             </form>
           </div>
         </div>

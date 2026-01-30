@@ -67,6 +67,19 @@ function throttle(func, limit) {
     };
 }
 
+const analyticsDebug = window.location.hostname === 'localhost' ||
+    window.location.hostname === '127.0.0.1';
+
+// Analytics Helper - Track events (wrapper for GA4)
+function trackEvent(eventName, params = {}) {
+    if (typeof gtag === 'function') {
+        gtag('event', eventName, params);
+    }
+    if (analyticsDebug) {
+        console.log('Analytics Event:', eventName, params);
+    }
+}
+
 // Utility: Detect mobile devices
 const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) 
     || window.innerWidth < 768;
@@ -77,6 +90,7 @@ const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)
 // Navigation scroll effect (throttled)
 const nav = document.querySelector('nav');
 const handleScroll = throttle(() => {
+    if (!nav) return;
     if (window.scrollY > 50) {
         nav.classList.add('scrolled');
     } else {
@@ -84,7 +98,9 @@ const handleScroll = throttle(() => {
     }
 }, 16); // ~60fps
 
-window.addEventListener('scroll', handleScroll, { passive: true });
+if (nav) {
+    window.addEventListener('scroll', handleScroll, { passive: true });
+}
 
 // Mobile menu toggle
 const mobileMenu = document.querySelector('.mobile-menu');
@@ -92,25 +108,80 @@ const navLinks = document.querySelector('.nav-links');
 let isMenuOpen = false;
 
 function toggleMobileMenu() {
+    if (!mobileMenu || !navLinks) return;
     isMenuOpen = !isMenuOpen;
     mobileMenu.classList.toggle('active', isMenuOpen);
     navLinks.classList.toggle('mobile-open', isMenuOpen);
     document.body.style.overflow = isMenuOpen ? 'hidden' : '';
+    // Update ARIA attribute for accessibility
+    mobileMenu.setAttribute('aria-expanded', isMenuOpen.toString());
 }
 
-mobileMenu.addEventListener('click', toggleMobileMenu);
+if (mobileMenu && navLinks) {
+    mobileMenu.addEventListener('click', toggleMobileMenu);
 
-// Close menu when a link is clicked
-navLinks.querySelectorAll('a').forEach(link => {
-    link.addEventListener('click', () => {
-        if (isMenuOpen) toggleMobileMenu();
+    // Close menu when a link is clicked
+    navLinks.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', () => {
+            if (isMenuOpen) toggleMobileMenu();
+        });
     });
-});
 
-// Close menu on escape key
-document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && isMenuOpen) toggleMobileMenu();
-});
+    // Close menu on escape key
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && isMenuOpen) toggleMobileMenu();
+    });
+}
+
+// Update aria-expanded attribute
+function updateMobileMenuAria() {
+    mobileMenu.setAttribute('aria-expanded', isMenuOpen.toString());
+}
+
+// ====================
+// PARALLAX EFFECTS
+// ====================
+const parallaxElements = document.querySelectorAll('[data-parallax]');
+let ticking = false;
+
+function updateParallax() {
+    if (prefersReducedMotion) return;
+
+    const scrollY = window.scrollY;
+    const viewportHeight = window.innerHeight;
+
+    parallaxElements.forEach(element => {
+        const rect = element.getBoundingClientRect();
+        const elementTop = rect.top + scrollY;
+        const elementCenter = elementTop + rect.height / 2;
+        const viewportCenter = scrollY + viewportHeight / 2;
+
+        // Only apply parallax when element is in or near viewport
+        if (rect.top < viewportHeight && rect.bottom > 0) {
+            const speed = parseFloat(element.dataset.speed) || 0.2;
+            const distance = (viewportCenter - elementCenter) * speed;
+
+            // Apply transform
+            element.style.transform = `translateY(${distance}px)`;
+        }
+    });
+
+    ticking = false;
+}
+
+function onParallaxScroll() {
+    if (!ticking) {
+        requestAnimationFrame(updateParallax);
+        ticking = true;
+    }
+}
+
+// Only enable parallax on non-mobile and with no reduced motion preference
+if (!isMobile && !prefersReducedMotion) {
+    window.addEventListener('scroll', onParallaxScroll, { passive: true });
+    // Initial call
+    updateParallax();
+}
 
 // Intersection Observer for reveal animations
 const observerOptions = {
@@ -132,10 +203,10 @@ document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 
 // Interactive particle network on hero canvas with sunset color cycling
 const canvas = document.getElementById('heroCanvas');
-const ctx = canvas.getContext('2d');
+const ctx = canvas?.getContext?.('2d');
 let particles = [];
-let mouseX = 0;
-let mouseY = 0;
+let mouseX = null;
+let mouseY = null;
 let animationId;
 let colorTime = 0;
 
@@ -143,7 +214,7 @@ let colorTime = 0;
 let isPageVisible = !document.hidden;
 let isCanvasVisible = true;
 let isAnimating = false;
-let mouseTrackingEnabled = true;
+let mouseTrackingEnabled = !prefersReducedMotion;
 
 // Sunset color palette for cycling
 const sunsetColors = [
@@ -178,6 +249,7 @@ function getCurrentSunsetColor(offset = 0) {
 }
 
 function resizeCanvas() {
+    if (!canvas) return;
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 }
@@ -197,29 +269,30 @@ class Particle {
     }
 
     update() {
-        // Mouse interaction
-        let dx = mouseX - this.x;
-        let dy = mouseY - this.y;
-        let distance = Math.sqrt(dx * dx + dy * dy);
-        let forceDirectionX = dx / distance;
-        let forceDirectionY = dy / distance;
-        let maxDistance = 150;
-        let force = (maxDistance - distance) / maxDistance;
-        let directionX = forceDirectionX * force * this.density * 0.5;
-        let directionY = forceDirectionY * force * this.density * 0.5;
+        const maxDistance = 150;
 
-        if (distance < maxDistance) {
-            this.x -= directionX;
-            this.y -= directionY;
-        } else {
-            // Gentle floating motion
-            this.x += this.vx;
-            this.y += this.vy;
-            
-            // Boundary check
-            if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
-            if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+        if (mouseTrackingEnabled && mouseX !== null && mouseY !== null) {
+            const dx = mouseX - this.x;
+            const dy = mouseY - this.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+
+            if (distance > 0 && distance < maxDistance) {
+                const force = (maxDistance - distance) / maxDistance;
+                const directionX = (dx / distance) * force * this.density * 0.5;
+                const directionY = (dy / distance) * force * this.density * 0.5;
+                this.x -= directionX;
+                this.y -= directionY;
+                return;
+            }
         }
+
+        // Gentle floating motion
+        this.x += this.vx;
+        this.y += this.vy;
+
+        // Boundary check
+        if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+        if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
     }
 
     draw() {
@@ -241,6 +314,7 @@ class Particle {
 }
 
 function init() {
+    if (!canvas || !ctx) return;
     particles = [];
     // Optimize particle count based on device and preferences
     let maxParticles = 100;
@@ -265,6 +339,7 @@ function init() {
 }
 
 function connectParticles() {
+    if (!ctx) return;
     // Adjust connection distance based on device
     const maxDistance = isMobile ? 100 : 120;
     const maxDistanceSquared = maxDistance * maxDistance; // Avoid sqrt when possible
@@ -296,7 +371,27 @@ function connectParticles() {
     }
 }
 
+function renderStaticFrame() {
+    if (!ctx) return;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    particles.forEach(particle => {
+        particle.draw();
+    });
+    connectParticles();
+}
+
 function animate() {
+    if (!canvas || !ctx) {
+        isAnimating = false;
+        return;
+    }
+
+    if (prefersReducedMotion) {
+        renderStaticFrame();
+        isAnimating = false;
+        return;
+    }
+
     // Only animate if page is visible and canvas is in viewport
     if (!isPageVisible || !isCanvasVisible) {
         isAnimating = false;
@@ -320,6 +415,11 @@ function animate() {
 
 // Start animation only when conditions are met
 function startAnimation() {
+    if (!canvas || !ctx) return;
+    if (prefersReducedMotion) {
+        renderStaticFrame();
+        return;
+    }
     if (!isAnimating && isPageVisible && isCanvasVisible) {
         animate();
     }
@@ -344,8 +444,10 @@ const handleMouseMove = (e) => {
 
 const handleTouchMove = (e) => {
     if (mouseTrackingEnabled && isAnimating) {
-        mouseX = e.touches[0].clientX;
-        mouseY = e.touches[0].clientY;
+        const touch = e.touches && e.touches[0];
+        if (!touch) return;
+        mouseX = touch.clientX;
+        mouseY = touch.clientY;
     }
 };
 
@@ -376,7 +478,12 @@ const canvasObserver = new IntersectionObserver((entries) => {
     });
 }, { threshold: 0.1 });
 
-canvasObserver.observe(document.querySelector('.hero'));
+const heroSection = document.querySelector('.hero');
+if (heroSection && canvas && ctx) {
+    canvasObserver.observe(heroSection);
+} else {
+    isCanvasVisible = false;
+}
 
 // Cleanup on page unload
 window.addEventListener('beforeunload', () => {
@@ -391,8 +498,10 @@ startAnimation();
 
 // Time-aware sunset intensity
 function updateSunsetIntensity() {
-    const hour = new Date().getHours();
     const sunsetAtmosphere = document.querySelector('.sunset-atmosphere');
+    if (!sunsetAtmosphere) return;
+
+    const hour = new Date().getHours();
     
     // Peak intensity during golden hour (5pm - 8pm)
     let intensity = 1;
@@ -418,6 +527,7 @@ setInterval(updateSunsetIntensity, 300000);
 // Occasional sunbeam flash effect
 function triggerSunbeam() {
     const sunbeam = document.querySelector('.sunbeam-flash');
+    if (!sunbeam || prefersReducedMotion) return;
     sunbeam.classList.remove('active');
     
     // Force reflow
@@ -433,6 +543,7 @@ function triggerSunbeam() {
 
 // Trigger sunbeam randomly between 15-45 seconds
 function scheduleSunbeam() {
+    if (prefersReducedMotion || !document.querySelector('.sunbeam-flash')) return;
     const delay = 15000 + Math.random() * 30000;
     setTimeout(() => {
         triggerSunbeam();
@@ -441,7 +552,9 @@ function scheduleSunbeam() {
 }
 
 // Start sunbeam effect after initial page load
-setTimeout(scheduleSunbeam, 5000);
+if (!prefersReducedMotion) {
+    setTimeout(scheduleSunbeam, 5000);
+}
 
 // Handle resize
 let resizeTimeout;
@@ -450,53 +563,234 @@ window.addEventListener('resize', () => {
     resizeTimeout = setTimeout(() => {
         resizeCanvas();
         init();
+        if (prefersReducedMotion) {
+            renderStaticFrame();
+        }
     }, 250);
 });
 
 // Smooth scroll for navigation links (using Lenis)
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function(e) {
-        e.preventDefault();
         const href = this.getAttribute('href');
-        if (!href || href === '#') return;
+        if (!href) return;
+
+        e.preventDefault();
+
+        if (href === '#') {
+            lenis.scrollTo(0, {
+                offset: 0,
+                duration: prefersReducedMotion ? 0 : 1,
+            });
+            return;
+        }
 
         const target = document.querySelector(href);
         if (!target) return;
+
         lenis.scrollTo(target, {
             offset: 0,
-            duration: 1.5,
+            duration: prefersReducedMotion ? 0 : 1.5,
         });
     });
 });
 
-// Form submission handling
-document.querySelector('.cta-form').addEventListener('submit', (e) => {
-    e.preventDefault();
-    const button = e.target.querySelector('button');
-    const originalText = button.textContent;
-    button.textContent = 'Submitting...';
-    button.disabled = true;
-    
-    setTimeout(() => {
-        button.textContent = 'Request Received ✓';
-        setTimeout(() => {
-            button.textContent = originalText;
-            button.disabled = false;
-            e.target.reset();
-        }, 2000);
-    }, 1500);
-});
+// ====================
+// FORM VALIDATION
+// ====================
 
-// Newsletter form
-document.querySelector('.footer-newsletter').addEventListener('submit', (e) => {
-    e.preventDefault();
-    const button = e.target.querySelector('button');
-    button.textContent = 'Subscribed ✓';
-    setTimeout(() => {
-        button.textContent = 'Subscribe';
-        e.target.querySelector('input').value = '';
-    }, 2000);
-});
+// Validation rules
+const validators = {
+    name: {
+        validate: (value) => value.trim().length >= 2,
+        message: 'Please enter your full name (at least 2 characters)'
+    },
+    email: {
+        validate: (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value),
+        message: 'Please enter a valid email address'
+    },
+    organization: {
+        validate: (value) => value.trim().length >= 2,
+        message: 'Please enter your organization name'
+    }
+};
+
+// Show error for a field
+function showError(input, errorElement, message) {
+    input.classList.add('invalid');
+    input.classList.remove('valid');
+    errorElement.textContent = message;
+    errorElement.classList.add('visible');
+    input.setAttribute('aria-invalid', 'true');
+}
+
+// Clear error for a field
+function clearError(input, errorElement) {
+    input.classList.remove('invalid');
+    input.classList.add('valid');
+    errorElement.textContent = '';
+    errorElement.classList.remove('visible');
+    input.setAttribute('aria-invalid', 'false');
+}
+
+// Validate a single field
+function validateField(input, validatorKey) {
+    const errorElement = document.getElementById(`${validatorKey === 'organization' ? 'org' : validatorKey}-error`);
+    const validator = validators[validatorKey];
+
+    if (!validator || !errorElement) return true;
+
+    const value = input.value;
+
+    if (!value.trim()) {
+        showError(input, errorElement, `This field is required`);
+        return false;
+    }
+
+    if (!validator.validate(value)) {
+        showError(input, errorElement, validator.message);
+        return false;
+    }
+
+    clearError(input, errorElement);
+    return true;
+}
+
+// Contact form validation and submission
+const contactForm = document.getElementById('contact-form');
+if (contactForm) {
+    const nameInput = document.getElementById('contact-name');
+    const emailInput = document.getElementById('contact-email');
+    const orgInput = document.getElementById('contact-org');
+    const successMessage = document.getElementById('form-success');
+
+    // Real-time validation on blur
+    nameInput?.addEventListener('blur', () => validateField(nameInput, 'name'));
+    emailInput?.addEventListener('blur', () => validateField(emailInput, 'email'));
+    orgInput?.addEventListener('blur', () => validateField(orgInput, 'organization'));
+
+    // Clear error on input
+    [nameInput, emailInput, orgInput].forEach(input => {
+        input?.addEventListener('input', () => {
+            const errorId = input.getAttribute('aria-describedby');
+            const errorElement = document.getElementById(errorId);
+            if (input.classList.contains('invalid') && errorElement) {
+                input.classList.remove('invalid');
+                errorElement.classList.remove('visible');
+            }
+        });
+    });
+
+    contactForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+
+        // Validate all fields (with null checks to prevent runtime errors)
+        const isNameValid = nameInput ? validateField(nameInput, 'name') : false;
+        const isEmailValid = emailInput ? validateField(emailInput, 'email') : false;
+        const isOrgValid = orgInput ? validateField(orgInput, 'organization') : false;
+
+        if (!isNameValid || !isEmailValid || !isOrgValid) {
+            // Focus the first invalid field
+            const firstInvalid = contactForm.querySelector('.invalid');
+            firstInvalid?.focus();
+
+            // Track validation failure
+            trackEvent('form_validation_error', {
+                form_name: 'contact_form',
+                fields_invalid: [
+                    !isNameValid && 'name',
+                    !isEmailValid && 'email',
+                    !isOrgValid && 'organization'
+                ].filter(Boolean)
+            });
+            return;
+        }
+
+        const button = e.target.querySelector('button[type="submit"]');
+        const originalText = button.textContent;
+        button.textContent = 'Submitting...';
+        button.disabled = true;
+
+        // Collect form data
+        const formData = {
+            name: nameInput.value.trim(),
+            email: emailInput.value.trim(),
+            organization: orgInput.value.trim()
+        };
+
+        // Track form submission
+        trackEvent('form_submit', {
+            form_name: 'contact_form',
+            form_destination: 'assessment_request'
+        });
+
+        // Simulate API call (replace with actual backend integration)
+        setTimeout(() => {
+            // Show success message
+            contactForm.style.display = 'none';
+            successMessage.hidden = false;
+
+            // Track successful submission
+            trackEvent('form_submit_success', {
+                form_name: 'contact_form'
+            });
+
+            // Reset form after delay
+            setTimeout(() => {
+                button.textContent = originalText;
+                button.disabled = false;
+                contactForm.reset();
+                contactForm.style.display = 'grid';
+                successMessage.hidden = true;
+
+                // Clear validation states
+                [nameInput, emailInput, orgInput].forEach(input => {
+                    input?.classList.remove('valid', 'invalid');
+                });
+            }, 5000);
+        }, 1500);
+    });
+}
+
+// Newsletter form with validation
+const newsletterForm = document.getElementById('newsletter-form');
+if (newsletterForm) {
+    newsletterForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const emailInput = document.getElementById('newsletter-email');
+        const button = e.target.querySelector('button');
+        const email = emailInput.value.trim();
+
+        // Validate email
+        if (!validators.email.validate(email)) {
+            emailInput.classList.add('invalid');
+            emailInput.focus();
+            trackEvent('newsletter_validation_error');
+            return;
+        }
+
+        emailInput.classList.remove('invalid');
+        button.textContent = 'Subscribing...';
+        button.disabled = true;
+
+        // Track newsletter signup
+        trackEvent('newsletter_signup', {
+            form_location: 'footer'
+        });
+
+        // Simulate API call
+        setTimeout(() => {
+            button.textContent = 'Subscribed ✓';
+            trackEvent('newsletter_signup_success');
+
+            setTimeout(() => {
+                button.textContent = 'Subscribe';
+                button.disabled = false;
+                emailInput.value = '';
+            }, 2000);
+        }, 1000);
+    });
+}
 
 // Dynamic footer year
 const footerText = document.querySelector('.footer-bottom p');
@@ -514,9 +808,47 @@ magneticButtons.forEach(button => {
         const y = e.clientY - rect.top - rect.height / 2;
         button.style.transform = `translate(${x * 0.15}px, ${y * 0.15}px)`;
     });
-    
+
     button.addEventListener('mouseleave', () => {
         button.style.transform = 'translate(0, 0)';
+    });
+
+    // Track CTA clicks
+    button.addEventListener('click', () => {
+        trackEvent('cta_click', {
+            button_text: button.textContent.trim(),
+            button_location: button.closest('section')?.id || 'unknown'
+        });
+    });
+});
+
+// Track secondary button clicks
+document.querySelectorAll('.btn-secondary').forEach(button => {
+    button.addEventListener('click', () => {
+        trackEvent('cta_click', {
+            button_text: button.textContent.trim(),
+            button_type: 'secondary',
+            button_location: button.closest('section')?.id || 'unknown'
+        });
+    });
+});
+
+// Track navigation clicks
+document.querySelectorAll('.nav-links a').forEach(link => {
+    link.addEventListener('click', () => {
+        trackEvent('navigation_click', {
+            link_text: link.textContent.trim(),
+            link_href: link.getAttribute('href')
+        });
+    });
+});
+
+// Track phone number clicks
+document.querySelectorAll('a[href^="tel:"]').forEach(link => {
+    link.addEventListener('click', () => {
+        trackEvent('phone_click', {
+            phone_location: link.closest('section')?.id || 'footer'
+        });
     });
 });
 
@@ -583,3 +915,62 @@ const metricObserver = new IntersectionObserver((entries) => {
 }, { threshold: 0.5 });
 
 metricValues.forEach(value => metricObserver.observe(value));
+
+// ====================
+// ANALYTICS TRACKING
+// ====================
+
+// Track scroll depth
+const scrollMilestones = [25, 50, 75, 100];
+const reachedMilestones = new Set();
+
+const trackScrollDepth = throttle(() => {
+    const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+    if (scrollHeight <= 0) return;
+    const scrollPercent = Math.round((window.scrollY / scrollHeight) * 100);
+
+    scrollMilestones.forEach(milestone => {
+        if (scrollPercent >= milestone && !reachedMilestones.has(milestone)) {
+            reachedMilestones.add(milestone);
+            trackEvent('scroll_depth', {
+                percent: milestone
+            });
+        }
+    });
+}, 500);
+
+window.addEventListener('scroll', trackScrollDepth, { passive: true });
+
+// Track section visibility
+const sectionObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            const sectionId = entry.target.id;
+            if (sectionId) {
+                trackEvent('section_view', {
+                    section_id: sectionId,
+                    section_name: entry.target.getAttribute('aria-label') ||
+                                 entry.target.querySelector('h2')?.textContent || sectionId
+                });
+            }
+            // Only track once per section
+            sectionObserver.unobserve(entry.target);
+        }
+    });
+}, { threshold: 0.3 });
+
+// Observe all major sections
+document.querySelectorAll('section[id]').forEach(section => {
+    sectionObserver.observe(section);
+});
+
+// Track time on page
+let pageLoadTime = Date.now();
+window.addEventListener('beforeunload', () => {
+    const timeOnPage = Math.round((Date.now() - pageLoadTime) / 1000);
+    const maxReached = reachedMilestones.size ? Math.max(...reachedMilestones) : 0;
+    trackEvent('page_exit', {
+        time_on_page_seconds: timeOnPage,
+        scroll_depth_reached: maxReached
+    });
+});
