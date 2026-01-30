@@ -1,5 +1,5 @@
 // Lenis smooth scroll
-import Lenis from 'https://cdn.jsdelivr.net/npm/lenis@1.1.18/dist/lenis.mjs';
+import Lenis from 'lenis';
 
 // Check for reduced motion preference early
 const prefersReducedMotionEarly = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
