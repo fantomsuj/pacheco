@@ -1275,6 +1275,21 @@ nav.scrolled {
   display: none;
 }
 
+/* Form Error Message */
+.form-submit-error {
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  color: #ef4444;
+  padding: 1rem 1.5rem;
+  text-align: center;
+  margin-bottom: 1rem;
+  font-weight: 500;
+}
+
+.form-submit-error[hidden] {
+  display: none;
+}
+
 .cta-form button {
   font-family: var(--font-body);
   font-size: 0.875rem;
