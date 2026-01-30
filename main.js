@@ -478,7 +478,6 @@ const canvasObserver = new IntersectionObserver((entries) => {
     });
 }, { threshold: 0.1 });
 
-const heroSection = document.querySelector('.hero');
 if (heroSection && canvas && ctx) {
     canvasObserver.observe(heroSection);
 } else {
