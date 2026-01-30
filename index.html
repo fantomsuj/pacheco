@@ -418,7 +418,7 @@
             appears. Let's discuss how Pacheco Ventures can accelerate your most
             critical objectives.
           </p>
-          <form class="cta-form" id="contact-form" novalidate aria-label="Contact request form">
+          <form class="cta-form" id="contact-form" novalidate aria-label="Contact request form" action="https://formspree.io/f/mdazyadv" method="POST">
             <div class="form-group">
               <label for="contact-name" class="sr-only">Full Name</label>
               <input
@@ -465,10 +465,14 @@
               />
               <span class="form-error" id="org-error" role="alert" aria-live="polite"></span>
             </div>
+            <input type="hidden" name="_subject" value="Pacheco Ventures — Strategic Assessment Request" />
             <button type="submit" aria-label="Submit contact request">Request Assessment</button>
           </form>
           <div class="form-success" id="form-success" role="status" aria-live="polite" hidden>
             Thank you! We'll be in touch within 24 hours.
+          </div>
+          <div class="form-submit-error" id="form-error" role="alert" aria-live="polite" hidden>
+            Something went wrong. Try again.
           </div>
           <p class="cta-alternative">
             Prefer a direct conversation?

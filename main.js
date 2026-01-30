@@ -662,6 +662,7 @@ if (contactForm) {
     const emailInput = document.getElementById('contact-email');
     const orgInput = document.getElementById('contact-org');
     const successMessage = document.getElementById('form-success');
+    const errorMessage = document.getElementById('form-error');
 
     // Real-time validation on blur
     nameInput?.addEventListener('blur', () => validateField(nameInput, 'name'));
@@ -680,7 +681,7 @@ if (contactForm) {
         });
     });
 
-    contactForm.addEventListener('submit', (e) => {
+    contactForm.addEventListener('submit', async (e) => {
         e.preventDefault();
 
         // Validate all fields (with null checks to prevent runtime errors)
@@ -706,16 +707,13 @@ if (contactForm) {
         }
 
         const button = e.target.querySelector('button[type="submit"]');
-        const originalText = button.textContent;
-        button.textContent = 'Submitting...';
-        button.disabled = true;
-
-        // Collect form data
-        const formData = {
-            name: nameInput.value.trim(),
-            email: emailInput.value.trim(),
-            organization: orgInput.value.trim()
-        };
+        const originalText = button?.textContent || 'Request Assessment';
+        if (button) {
+            button.textContent = 'Submitting...';
+            button.disabled = true;
+        }
+        if (successMessage) successMessage.hidden = true;
+        if (errorMessage) errorMessage.hidden = true;
 
         // Track form submission
         trackEvent('form_submit', {
@@ -723,31 +721,59 @@ if (contactForm) {
             form_destination: 'assessment_request'
         });
 
-        // Simulate API call (replace with actual backend integration)
-        setTimeout(() => {
-            // Show success message
-            contactForm.style.display = 'none';
-            successMessage.hidden = false;
-
-            // Track successful submission
-            trackEvent('form_submit_success', {
-                form_name: 'contact_form'
+        try {
+            const formData = new FormData(contactForm);
+            const res = await fetch(contactForm.action, {
+                method: 'POST',
+                body: formData,
+                headers: { Accept: 'application/json' }
             });
 
-            // Reset form after delay
-            setTimeout(() => {
-                button.textContent = originalText;
-                button.disabled = false;
-                contactForm.reset();
-                contactForm.style.display = 'grid';
-                successMessage.hidden = true;
+            if (res.ok) {
+                // Show success message
+                contactForm.style.display = 'none';
+                if (successMessage) successMessage.hidden = false;
 
-                // Clear validation states
-                [nameInput, emailInput, orgInput].forEach(input => {
-                    input?.classList.remove('valid', 'invalid');
+                // Track successful submission
+                trackEvent('form_submit_success', {
+                    form_name: 'contact_form'
                 });
-            }, 5000);
-        }, 1500);
+
+                // Reset form after delay
+                setTimeout(() => {
+                    if (button) {
+                        button.textContent = originalText;
+                        button.disabled = false;
+                    }
+                    contactForm.reset();
+                    contactForm.style.display = 'grid';
+                    if (successMessage) successMessage.hidden = true;
+
+                    // Clear validation states
+                    [nameInput, emailInput, orgInput].forEach(input => {
+                        input?.classList.remove('valid', 'invalid');
+                    });
+                }, 5000);
+                return;
+            }
+
+            if (errorMessage) errorMessage.hidden = false;
+            trackEvent('form_submit_error', {
+                form_name: 'contact_form',
+                status: res.status
+            });
+        } catch (error) {
+            if (errorMessage) errorMessage.hidden = false;
+            trackEvent('form_submit_error', {
+                form_name: 'contact_form',
+                error: error?.message || 'network_error'
+            });
+        }
+
+        if (button) {
+            button.textContent = originalText;
+            button.disabled = false;
+        }
     });
 }
 
