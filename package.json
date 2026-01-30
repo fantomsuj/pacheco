@@ -21,5 +21,8 @@
   "homepage": "https://github.com/fantomsuj/pacheco#readme",
   "devDependencies": {
     "vite": "^7.3.0"
+  },
+  "dependencies": {
+    "lenis": "^1.1.18"
   }
 }
