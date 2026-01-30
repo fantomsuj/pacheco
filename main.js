@@ -1,3 +1,60 @@
+// Lenis smooth scroll
+import Lenis from 'https://cdn.jsdelivr.net/npm/lenis@1.1.18/dist/lenis.mjs';
+
+// Check for reduced motion preference early
+const prefersReducedMotionEarly = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+const lenis = new Lenis({
+    duration: prefersReducedMotionEarly ? 0.5 : 1.2,
+    easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), // Smooth exponential ease
+    orientation: 'vertical',
+    gestureOrientation: 'vertical',
+    smoothWheel: !prefersReducedMotionEarly,
+    wheelMultiplier: 1,
+    touchMultiplier: 2,
+});
+
+function raf(time) {
+    lenis.raf(time);
+    requestAnimationFrame(raf);
+}
+requestAnimationFrame(raf);
+
+// Hero parallax elements
+const heroSection = document.querySelector('.hero');
+const heroContent = document.querySelector('.hero-content');
+const heroSunsetAtmosphere = document.querySelector('.sunset-atmosphere');
+const heroCanvas = document.querySelector('.hero-canvas');
+
+// Parallax effect on scroll (skip if reduced motion preferred)
+if (!prefersReducedMotionEarly) {
+    lenis.on('scroll', ({ scroll }) => {
+        if (!heroSection) return;
+
+        const heroHeight = heroSection.offsetHeight;
+        const scrollProgress = Math.min(scroll / heroHeight, 1);
+
+        // Only apply parallax when hero is visible
+        if (scroll < heroHeight * 1.5) {
+            // Content moves up faster (creates depth)
+            if (heroContent) {
+                heroContent.style.transform = `translateY(${scroll * 0.3}px)`;
+                heroContent.style.opacity = 1 - scrollProgress * 0.8;
+            }
+
+            // Sunset atmosphere moves slower (background layer)
+            if (heroSunsetAtmosphere) {
+                heroSunsetAtmosphere.style.transform = `translateY(${scroll * 0.15}px) scale(${1 + scrollProgress * 0.1})`;
+            }
+
+            // Canvas moves at medium speed
+            if (heroCanvas) {
+                heroCanvas.style.transform = `translateY(${scroll * 0.2}px)`;
+            }
+        }
+    });
+}
+
 // Utility: Throttle function for performance
 function throttle(func, limit) {
     let inThrottle;
@@ -421,7 +478,6 @@ const canvasObserver = new IntersectionObserver((entries) => {
     });
 }, { threshold: 0.1 });
 
-const heroSection = document.querySelector('.hero');
 if (heroSection && canvas && ctx) {
     canvasObserver.observe(heroSection);
 } else {
@@ -512,17 +568,18 @@ window.addEventListener('resize', () => {
     }, 250);
 });
 
-// Smooth scroll for navigation links
+// Smooth scroll for navigation links (using Lenis)
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function(e) {
         const href = this.getAttribute('href');
         if (!href) return;
 
+        e.preventDefault();
+
         if (href === '#') {
-            e.preventDefault();
-            window.scrollTo({
-                top: 0,
-                behavior: prefersReducedMotion ? 'auto' : 'smooth'
+            lenis.scrollTo(0, {
+                offset: 0,
+                duration: prefersReducedMotion ? 0 : 1,
             });
             return;
         }
@@ -530,10 +587,9 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         const target = document.querySelector(href);
         if (!target) return;
 
-        e.preventDefault();
-        target.scrollIntoView({
-            behavior: prefersReducedMotion ? 'auto' : 'smooth',
-            block: 'start'
+        lenis.scrollTo(target, {
+            offset: 0,
+            duration: prefersReducedMotion ? 0 : 1.5,
         });
     });
 });
