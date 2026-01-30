@@ -410,23 +410,41 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     });
 });
 
-// Form submission handling
-document.querySelector('.cta-form').addEventListener('submit', (e) => {
-    e.preventDefault();
-    const button = e.target.querySelector('button');
-    const originalText = button.textContent;
-    button.textContent = 'Submitting...';
-    button.disabled = true;
-    
-    setTimeout(() => {
-        button.textContent = 'Request Received ✓';
+// Form submission handling (Formspree)
+const ctaForm = document.querySelector('.cta-form');
+if (ctaForm) {
+    ctaForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const button = ctaForm.querySelector('button[type="submit"]');
+        const originalText = button.textContent;
+        button.textContent = 'Submitting...';
+        button.disabled = true;
+        
+        try {
+            const response = await fetch(ctaForm.action, {
+                method: 'POST',
+                body: new FormData(ctaForm),
+                headers: {
+                    'Accept': 'application/json'
+                }
+            });
+            
+            if (response.ok) {
+                button.textContent = 'Request Received ✓';
+                ctaForm.reset();
+            } else {
+                button.textContent = 'Something went wrong';
+            }
+        } catch (error) {
+            button.textContent = 'Network error';
+        }
+        
         setTimeout(() => {
             button.textContent = originalText;
             button.disabled = false;
-            e.target.reset();
-        }, 2000);
-    }, 1500);
-});
+        }, 2500);
+    });
+}
 
 // Newsletter form
 document.querySelector('.footer-newsletter').addEventListener('submit', (e) => {
