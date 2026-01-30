@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.googletagmanager.com 'sha256-8ZcWw2hxBHI6q6hjz9lNb5+Cw8btP8o27GpUAr2dxJQ=' 'sha256-v9IUZublr3vZnT4LyBrRuHyD4I2Ecf+VLJpvBMLPZ1Q=' 'sha256-/Bwb0HQmvbfEbOuqubeMpmJJUA0yN6U7KufmjqpWMWc='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://www.google-analytics.com https://www.googletagmanager.com; connect-src 'self' https://www.google-analytics.com https://region1.google-analytics.com https://www.googletagmanager.com ws://localhost:5173; form-action 'self' https://formspree.io; base-uri 'self'; object-src 'none';" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.googletagmanager.com 'sha256-8ZcWw2hxBHI6q6hjz9lNb5+Cw8btP8o27GpUAr2dxJQ=' 'sha256-v9IUZublr3vZnT4LyBrRuHyD4I2Ecf+VLJpvBMLPZ1Q='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://www.google-analytics.com https://www.googletagmanager.com; connect-src 'self' https://www.google-analytics.com https://region1.google-analytics.com https://www.googletagmanager.com; form-action 'self' https://formspree.io; base-uri 'self'; object-src 'none';" />
     <meta name="referrer" content="strict-origin-when-cross-origin" />
     <title>Pacheco Ventures | Strategic Advisory for Arizona's Elite</title>
     <meta name="description" content="Pacheco Ventures architects decisive advantage for Arizona's foremost leaders through investor-grade strategy, real-time policy intelligence, and unmatched execution.">
@@ -30,6 +30,7 @@
     <meta name="twitter:description" content="Architecting decisive advantage through investor-grade strategy and real-time policy intelligence.">
     <meta name="twitter:image" content="https://pacheco.ventures/og-image.jpg">
     <meta name="twitter:creator" content="@pachecoventures">
+    <meta name="ga-measurement-id" content="GA_MEASUREMENT_ID">
 
     <!-- Structured Data - Organization -->
     <script type="application/ld+json">
@@ -92,13 +93,7 @@
     <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
 
     <!-- Google Analytics 4 - Replace GA_MEASUREMENT_ID with your actual ID -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=GA_MEASUREMENT_ID"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'GA_MEASUREMENT_ID');
-    </script>
+    <script src="./analytics.js" defer></script>
   </head>
   <body>
     <!-- Skip to main content for accessibility -->
