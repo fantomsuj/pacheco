@@ -667,7 +667,7 @@ if (contactForm) {
 
         try {
             const formData = new FormData(contactForm);
-            const res = await fetch('https://formspree.io/f/mdazyadv', {
+            const res = await fetch(contactForm.action, {
                 method: 'POST',
                 body: formData,
                 headers: { Accept: 'application/json' }

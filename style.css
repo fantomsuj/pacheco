@@ -11,6 +11,10 @@
   --sunset-coral: #ff8c42;
   --sunset-rose: #b46478;
   --sunset-mauve: #9c5264;
+  --color-error: #ef4444;
+  --color-error-bg: rgba(239, 68, 68, 0.08);
+  --color-error-border: rgba(239, 68, 68, 0.25);
+  --color-error-shadow: rgba(239, 68, 68, 0.15);
   --border: rgba(255, 255, 255, 0.08);
   --border-light: rgba(255, 255, 255, 0.15);
 
@@ -1236,7 +1240,7 @@ nav.scrolled {
 /* Form Error Styles */
 .form-error {
   font-size: 0.75rem;
-  color: #ef4444;
+  color: var(--color-error);
   margin-top: 0.25rem;
   min-height: 1.25rem;
   opacity: 0;
@@ -1248,12 +1252,12 @@ nav.scrolled {
 }
 
 .cta-form input.invalid {
-  border-color: #ef4444;
+  border-color: var(--color-error);
 }
 
 .cta-form input.invalid:focus {
-  border-color: #ef4444;
-  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
+  border-color: var(--color-error);
+  box-shadow: 0 0 0 3px var(--color-error-shadow);
 }
 
 .cta-form input.valid {
@@ -1277,9 +1281,9 @@ nav.scrolled {
 
 /* Form Error Message */
 .form-submit-error {
-  background: rgba(239, 68, 68, 0.08);
-  border: 1px solid rgba(239, 68, 68, 0.25);
-  color: #ef4444;
+  background: var(--color-error-bg);
+  border: 1px solid var(--color-error-border);
+  color: var(--color-error);
   padding: 1rem 1.5rem;
   text-align: center;
   margin-bottom: 1rem;
@@ -1400,7 +1404,7 @@ footer {
 }
 
 .footer-newsletter input.invalid {
-  border-color: #ef4444;
+  border-color: var(--color-error);
   animation: shake 0.4s ease;
 }
 
