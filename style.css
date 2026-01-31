@@ -1573,7 +1573,26 @@ footer {
   }
 }
 
+@media (max-width: 960px) {
+  .nav-links {
+    gap: 2rem;
+  }
+
+  .nav-cta {
+    font-size: 0.75rem;
+    padding: 0.65rem 1.25rem;
+  }
+
+  .trust-logos {
+    gap: 2rem;
+  }
+}
+
 @media (max-width: 768px) {
+  nav {
+    padding: 1.25rem 0;
+  }
+
   .nav-links {
     display: none;
   }
@@ -1588,6 +1607,14 @@ footer {
 
   .hero-title {
     font-size: clamp(2.25rem, 10vw, 3.5rem);
+  }
+
+  .narrative,
+  .services,
+  .differentiators,
+  .testimonials,
+  .cta-section {
+    padding: 7rem 0;
   }
 
   .services-grid,
@@ -1619,5 +1646,158 @@ footer {
   .scenario-card.offset-1,
   .scenario-card.offset-2 {
     transform: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .container {
+    padding: 0 1.25rem;
+  }
+
+  .hero {
+    min-height: auto;
+    padding-top: 88px;
+    padding-bottom: 4rem;
+  }
+
+  .hero-content {
+    text-align: center;
+  }
+
+  .hero-eyebrow {
+    justify-content: center;
+    margin-bottom: 1.5rem;
+  }
+
+  .hero-subtitle {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .hero-actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+
+  .btn-primary,
+  .btn-secondary {
+    width: 100%;
+  }
+
+  .hero-trust {
+    margin-top: 3.5rem;
+    text-align: center;
+  }
+
+  .trust-logos {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 1rem 1.5rem;
+    justify-items: center;
+  }
+
+  .trust-logo {
+    font-size: 1.1rem;
+  }
+
+  .scenario-card {
+    padding: 2rem;
+  }
+
+  .service-card {
+    padding: 2.25rem;
+  }
+
+  .metrics-grid {
+    gap: 1rem;
+  }
+
+  .metric-card {
+    padding: 2rem;
+  }
+
+  .testimonial-card {
+    padding: 2.25rem;
+  }
+
+  .testimonial-quote {
+    font-size: 1.1rem;
+  }
+
+  .cta-form button {
+    width: 100%;
+  }
+
+  .footer-badges {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 0 1rem;
+  }
+
+  .hero-title {
+    font-size: clamp(2rem, 9vw, 3rem);
+  }
+
+  .section-header h2,
+  .diff-content h2,
+  .cta-content h2,
+  .narrative-content h2 {
+    font-size: clamp(2rem, 7vw, 2.75rem);
+  }
+
+  .narrative,
+  .services,
+  .differentiators,
+  .testimonials,
+  .cta-section {
+    padding: 5.5rem 0;
+  }
+
+  .scenario-card {
+    padding: 1.75rem;
+  }
+
+  .scenario-quote {
+    font-size: 1.25rem;
+  }
+
+  .service-card {
+    padding: 1.75rem;
+  }
+
+  .service-group-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .metric-card {
+    padding: 1.75rem;
+  }
+
+  .metric-value {
+    font-size: 2.75rem;
+  }
+
+  .testimonial-card {
+    padding: 2rem;
+  }
+
+  .cta-form input {
+    padding: 0.875rem 1.25rem;
+  }
+
+  .cta-form button {
+    padding: 0.9rem 1.5rem;
+  }
+
+  .footer-grid {
+    gap: 2rem;
   }
 }
