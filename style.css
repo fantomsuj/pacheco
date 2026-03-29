@@ -1218,6 +1218,80 @@ nav.scrolled {
   color: var(--text-muted);
 }
 
+/* Leadership Section */
+.leadership {
+  padding: 10rem 0;
+  background: linear-gradient(
+    180deg,
+    rgba(17, 17, 17, 0.5) 0%,
+    rgba(10, 10, 10, 0.95) 100%
+  );
+}
+
+.leadership-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2rem;
+  margin-top: 4rem;
+}
+
+.leadership-card {
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.leadership-image-wrap {
+  aspect-ratio: 16 / 9;
+  background: linear-gradient(120deg, rgba(201, 108, 77, 0.3), rgba(156, 82, 100, 0.25));
+}
+
+.leadership-image-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.leadership-image-placeholder {
+  width: 100%;
+  height: 100%;
+}
+
+.leadership-card-body {
+  padding: 1.5rem;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.leadership-role {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent-light);
+  font-weight: 700;
+}
+
+.leadership-headline {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.leadership-summary,
+.leadership-education {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+}
+
+.leadership-highlights {
+  margin-left: 1rem;
+  display: grid;
+  gap: 0.35rem;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
 /* CTA Section */
 .cta-section {
   padding: 10rem 0;
