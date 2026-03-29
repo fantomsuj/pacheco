@@ -280,6 +280,69 @@ const observer = new IntersectionObserver((entries) => {
 
 document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 
+// Leadership bio modal
+const bioModal = document.getElementById('bio-modal');
+const bioModalTitle = document.getElementById('bio-modal-title');
+const bioModalCopy = document.getElementById('bio-modal-copy');
+const bioModalPanel = bioModal?.querySelector('.bio-modal-panel');
+const bioButtons = document.querySelectorAll('.leader-read-more');
+const bios = {
+    'jessica-bio': {
+        title: 'Jessica Pacheco — Founding Principal',
+        copy: 'Jessica Pacheco advises executive teams and institutions navigating consequential decisions at the intersection of enterprise strategy and public policy. Her leadership background includes 25 years at a Fortune 500 energy company, where she built cross-sector partnerships and executed initiatives requiring board, regulatory, and community alignment. She currently serves as Vice Chairwoman of the Arizona Board of Regents and is slated to become Chairwoman in 2027. Her civic portfolio spans higher education governance, philanthropy, and statewide economic priorities, informing client strategy with uncommon perspective on how Arizona decisions are shaped, funded, and delivered.'
+    },
+    'michael-bio': {
+        title: 'Michael Vargas — Principal, Government & Public Affairs',
+        copy: 'Michael Vargas is a policy strategist with deep operating experience inside Arizona’s government affairs environment. Over 14 years representing Arizona Public Service at the Capitol, he led legislative strategy and stakeholder engagement through highly visible policy cycles. He later served as U.S. Senator Jeff Flake’s State Director, managing statewide constituent services and relationship-building across civic and business communities. Michael partners with leadership teams to assess regulatory and political risk, sharpen stakeholder strategy, and coordinate cross-functional response plans that protect optionality and advance core priorities.'
+    },
+    'grant-bio': {
+        title: 'Grant Packwood — Senior Consultant',
+        copy: 'Grant Packwood supports clients pursuing durable social and workforce outcomes through coalition-based strategy. His background includes nonprofit and community affairs leadership focused on justice-impacted populations, where he helped shape training, storytelling, and employer partnership initiatives, including collaboration with RSI. Earlier in his career, Grant served as a legislative aide in the Arizona State Legislature and developed practical fluency in policy development, communications, and implementation mechanics. He helps organizations translate mission into executable plans, align stakeholders around measurable goals, and build partnerships that sustain momentum beyond launch.'
+    }
+};
+let lastFocusedTrigger = null;
+
+function closeBioModal() {
+    if (!bioModal) return;
+    bioModal.hidden = true;
+    document.body.style.overflow = '';
+    if (lastFocusedTrigger) {
+        lastFocusedTrigger.focus();
+    }
+}
+
+if (bioModal && bioModalTitle && bioModalCopy && bioModalPanel) {
+    bioButtons.forEach((button) => {
+        button.addEventListener('click', () => {
+            const target = button.getAttribute('data-bio-target');
+            const bio = bios[target];
+            if (!bio) return;
+
+            lastFocusedTrigger = button;
+            bioModalTitle.textContent = bio.title;
+            bioModalCopy.textContent = bio.copy;
+            bioModal.hidden = false;
+            document.body.style.overflow = 'hidden';
+            bioModalPanel.focus();
+            trackEvent('bio_modal_open', {
+                bio: target
+            });
+        });
+    });
+
+    bioModal.addEventListener('click', (event) => {
+        const closeTarget = event.target.closest('[data-modal-close]');
+        if (!closeTarget) return;
+        closeBioModal();
+    });
+
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && !bioModal.hidden) {
+            closeBioModal();
+        }
+    });
+}
+
 // Interactive particle network on hero canvas with sunset color cycling
 const canvas = document.getElementById('heroCanvas');
 const ctx = canvas?.getContext?.('2d');
