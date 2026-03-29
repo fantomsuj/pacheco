@@ -179,6 +179,17 @@ h4 {
   transform: translateY(0);
 }
 
+/* Render only when needed for below-the-fold sections */
+.narrative,
+.services,
+.differentiators,
+.testimonials,
+.cta-section,
+footer {
+  content-visibility: auto;
+  contain-intrinsic-size: 1px 900px;
+}
+
 /* Navigation */
 nav {
   position: fixed;

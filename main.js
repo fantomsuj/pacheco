@@ -3,6 +3,8 @@ import Lenis from 'lenis';
 
 // Check for reduced motion preference early
 const prefersReducedMotionEarly = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+    || window.innerWidth < 768;
 
 const lenis = new Lenis({
     duration: prefersReducedMotionEarly ? 0.5 : 1.2,
@@ -27,7 +29,7 @@ const heroSunsetAtmosphere = document.querySelector('.sunset-atmosphere');
 const heroCanvas = document.querySelector('.hero-canvas');
 
 // Parallax effect on scroll (skip if reduced motion preferred)
-if (!prefersReducedMotionEarly) {
+if (!prefersReducedMotionEarly && !isMobile) {
     lenis.on('scroll', ({ scroll }) => {
         if (!heroSection) return;
 
@@ -70,6 +72,73 @@ function throttle(func, limit) {
 const analyticsDebug = window.location.hostname === 'localhost' ||
     window.location.hostname === '127.0.0.1';
 
+let analyticsLoaded = false;
+let nonCriticalFontsLoaded = false;
+
+function loadScriptOnce(src) {
+    return new Promise((resolve, reject) => {
+        if (document.querySelector(`script[src="${src}"]`)) {
+            resolve();
+            return;
+        }
+        const script = document.createElement('script');
+        script.src = src;
+        script.defer = true;
+        script.onload = () => resolve();
+        script.onerror = () => reject(new Error(`Failed to load script: ${src}`));
+        document.head.appendChild(script);
+    });
+}
+
+function loadAnalytics() {
+    if (analyticsLoaded) return;
+    analyticsLoaded = true;
+    loadScriptOnce('./analytics.js').catch((error) => {
+        analyticsLoaded = false;
+        if (analyticsDebug) {
+            console.warn(error);
+        }
+    });
+}
+
+function loadNonCriticalFonts() {
+    if (nonCriticalFontsLoaded) return;
+    nonCriticalFontsLoaded = true;
+    const fontLink = document.createElement('link');
+    fontLink.rel = 'stylesheet';
+    fontLink.href = 'https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=Manrope:wght@300;500&family=JetBrains+Mono:wght@400;500&display=swap';
+    document.head.appendChild(fontLink);
+}
+
+function scheduleDeferredResources() {
+    const loadDeferredResources = () => {
+        loadAnalytics();
+        loadNonCriticalFonts();
+    };
+
+    const triggerOnce = () => {
+        loadDeferredResources();
+        window.removeEventListener('pointerdown', triggerOnce);
+        window.removeEventListener('keydown', triggerOnce);
+        window.removeEventListener('touchstart', triggerOnce);
+        window.removeEventListener('scroll', triggerOnce);
+    };
+
+    window.addEventListener('pointerdown', triggerOnce, { passive: true, once: true });
+    window.addEventListener('keydown', triggerOnce, { once: true });
+    window.addEventListener('touchstart', triggerOnce, { passive: true, once: true });
+    window.addEventListener('scroll', triggerOnce, { passive: true, once: true });
+
+    const idleLoad = () => loadDeferredResources();
+    if ('requestIdleCallback' in window) {
+        window.requestIdleCallback(idleLoad, { timeout: 3000 });
+    } else {
+        setTimeout(idleLoad, 2500);
+    }
+}
+
+scheduleDeferredResources();
+
 // Analytics Helper - Track events (wrapper for GA4)
 function trackEvent(eventName, params = {}) {
     if (typeof gtag === 'function') {
@@ -79,10 +148,6 @@ function trackEvent(eventName, params = {}) {
         console.log('Analytics Event:', eventName, params);
     }
 }
-
-// Utility: Detect mobile devices
-const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) 
-    || window.innerWidth < 768;
 
 // Utility: Detect reduced motion preference
 const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -143,9 +208,11 @@ function updateMobileMenuAria() {
 // ====================
 const parallaxElements = document.querySelectorAll('[data-parallax]');
 let ticking = false;
+let isHeroVisible = true;
+let parallaxListenerActive = false;
 
 function updateParallax() {
-    if (prefersReducedMotion) return;
+    if (prefersReducedMotion || !isHeroVisible) return;
 
     const scrollY = window.scrollY;
     const viewportHeight = window.innerHeight;
@@ -176,9 +243,21 @@ function onParallaxScroll() {
     }
 }
 
+function enableParallaxListener() {
+    if (parallaxListenerActive || isMobile || prefersReducedMotion) return;
+    window.addEventListener('scroll', onParallaxScroll, { passive: true });
+    parallaxListenerActive = true;
+}
+
+function disableParallaxListener() {
+    if (!parallaxListenerActive) return;
+    window.removeEventListener('scroll', onParallaxScroll);
+    parallaxListenerActive = false;
+}
+
 // Only enable parallax on non-mobile and with no reduced motion preference
 if (!isMobile && !prefersReducedMotion) {
-    window.addEventListener('scroll', onParallaxScroll, { passive: true });
+    enableParallaxListener();
     // Initial call
     updateParallax();
 }
@@ -215,6 +294,11 @@ let isPageVisible = !document.hidden;
 let isCanvasVisible = true;
 let isAnimating = false;
 let mouseTrackingEnabled = !prefersReducedMotion;
+const shouldUseLightEffects = isMobile || prefersReducedMotion;
+
+if (shouldUseLightEffects && heroCanvas) {
+    heroCanvas.style.display = 'none';
+}
 
 // Sunset color palette for cycling
 const sunsetColors = [
@@ -315,6 +399,10 @@ class Particle {
 
 function init() {
     if (!canvas || !ctx) return;
+    if (shouldUseLightEffects) {
+        particles = [];
+        return;
+    }
     particles = [];
     // Optimize particle count based on device and preferences
     let maxParticles = 100;
@@ -386,7 +474,7 @@ function animate() {
         return;
     }
 
-    if (prefersReducedMotion) {
+    if (prefersReducedMotion || shouldUseLightEffects) {
         renderStaticFrame();
         isAnimating = false;
         return;
@@ -416,7 +504,7 @@ function animate() {
 // Start animation only when conditions are met
 function startAnimation() {
     if (!canvas || !ctx) return;
-    if (prefersReducedMotion) {
+    if (prefersReducedMotion || shouldUseLightEffects) {
         renderStaticFrame();
         return;
     }
@@ -436,14 +524,14 @@ function stopAnimation() {
 
 // Mouse tracking (conditional based on animation state)
 const handleMouseMove = (e) => {
-    if (mouseTrackingEnabled && isAnimating) {
+    if (mouseTrackingEnabled && isAnimating && !shouldUseLightEffects) {
         mouseX = e.clientX;
         mouseY = e.clientY;
     }
 };
 
 const handleTouchMove = (e) => {
-    if (mouseTrackingEnabled && isAnimating) {
+    if (mouseTrackingEnabled && isAnimating && !shouldUseLightEffects) {
         const touch = e.touches && e.touches[0];
         if (!touch) return;
         mouseX = touch.clientX;
@@ -459,9 +547,15 @@ document.addEventListener('visibilitychange', () => {
     isPageVisible = !document.hidden;
     
     if (isPageVisible && isCanvasVisible) {
+        if (isHeroVisible) enableParallaxListener();
         startAnimation();
+        startSunsetIntensityUpdates();
+        startSunbeamEffect();
     } else {
+        disableParallaxListener();
         stopAnimation();
+        stopSunsetIntensityUpdates();
+        stopSunbeamEffect();
     }
 });
 
@@ -469,11 +563,23 @@ document.addEventListener('visibilitychange', () => {
 const canvasObserver = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
         isCanvasVisible = entry.isIntersecting;
+        isHeroVisible = entry.isIntersecting;
+
+        if (!isHeroVisible) {
+            ticking = false;
+            disableParallaxListener();
+        } else if (isPageVisible) {
+            enableParallaxListener();
+        }
         
         if (isCanvasVisible && isPageVisible) {
             startAnimation();
+            startSunsetIntensityUpdates();
+            startSunbeamEffect();
         } else {
             stopAnimation();
+            stopSunsetIntensityUpdates();
+            stopSunbeamEffect();
         }
     });
 }, { threshold: 0.1 });
@@ -482,11 +588,14 @@ if (heroSection && canvas && ctx) {
     canvasObserver.observe(heroSection);
 } else {
     isCanvasVisible = false;
+    isHeroVisible = false;
 }
 
 // Cleanup on page unload
 window.addEventListener('beforeunload', () => {
     stopAnimation();
+    stopSunsetIntensityUpdates();
+    stopSunbeamEffect();
     canvasObserver.disconnect();
 });
 
@@ -497,6 +606,7 @@ startAnimation();
 
 // Time-aware sunset intensity
 function updateSunsetIntensity() {
+    if (!isPageVisible || !isHeroVisible) return;
     const sunsetAtmosphere = document.querySelector('.sunset-atmosphere');
     if (!sunsetAtmosphere) return;
 
@@ -519,9 +629,19 @@ function updateSunsetIntensity() {
     sunsetAtmosphere.style.filter = `saturate(${0.8 + intensity * 0.4})`;
 }
 
-// Update on load and every 5 minutes
-updateSunsetIntensity();
-setInterval(updateSunsetIntensity, 300000);
+let sunsetIntervalId = null;
+
+function startSunsetIntensityUpdates() {
+    if (sunsetIntervalId || !isPageVisible || !isHeroVisible) return;
+    updateSunsetIntensity();
+    sunsetIntervalId = setInterval(updateSunsetIntensity, 300000);
+}
+
+function stopSunsetIntensityUpdates() {
+    if (!sunsetIntervalId) return;
+    clearInterval(sunsetIntervalId);
+    sunsetIntervalId = null;
+}
 
 // Occasional sunbeam flash effect
 function triggerSunbeam() {
@@ -541,19 +661,31 @@ function triggerSunbeam() {
 }
 
 // Trigger sunbeam randomly between 15-45 seconds
+let sunbeamTimeoutId = null;
+
 function scheduleSunbeam() {
-    if (prefersReducedMotion || !document.querySelector('.sunbeam-flash')) return;
+    if (prefersReducedMotion || shouldUseLightEffects || !isPageVisible || !isHeroVisible || !document.querySelector('.sunbeam-flash')) return;
     const delay = 15000 + Math.random() * 30000;
-    setTimeout(() => {
+    sunbeamTimeoutId = setTimeout(() => {
         triggerSunbeam();
         scheduleSunbeam();
     }, delay);
 }
 
-// Start sunbeam effect after initial page load
-if (!prefersReducedMotion) {
-    setTimeout(scheduleSunbeam, 5000);
+function startSunbeamEffect() {
+    if (sunbeamTimeoutId || prefersReducedMotion || shouldUseLightEffects || !isPageVisible || !isHeroVisible) return;
+    sunbeamTimeoutId = setTimeout(scheduleSunbeam, 5000);
 }
+
+function stopSunbeamEffect() {
+    if (!sunbeamTimeoutId) return;
+    clearTimeout(sunbeamTimeoutId);
+    sunbeamTimeoutId = null;
+}
+
+// Start visual timers
+startSunsetIntensityUpdates();
+startSunbeamEffect();
 
 // Handle resize
 let resizeTimeout;
