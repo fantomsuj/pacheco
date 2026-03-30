@@ -278,7 +278,11 @@ const observer = new IntersectionObserver((entries) => {
     });
 }, observerOptions);
 
-document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+function observeRevealElements(root = document) {
+    root.querySelectorAll('.reveal').forEach((element) => observer.observe(element));
+}
+
+observeRevealElements();
 
 // Interactive particle network on hero canvas with sunset color cycling
 const canvas = document.getElementById('heroCanvas');
@@ -1008,6 +1012,94 @@ document.querySelectorAll('a[href^="tel:"]').forEach(link => {
         });
     });
 });
+
+// Leadership cards rendered from a single data model
+const leadershipProfiles = [
+    {
+        id: 'jessica-pacheco',
+        name: 'Jessica Pacheco',
+        role: 'Founder & Managing Principal',
+        headline: 'Trusted advisor to Fortune 500 leaders, founders, and civic institutions.',
+        summary: 'Jessica leads complex engagements where policy, capital, and reputation intersect. Over the last decade, she has helped executives and ownership groups translate high-stakes strategy into measurable outcomes across Arizona’s most visible sectors. Her work combines institutional rigor with practical execution, from investor positioning and crisis navigation to stakeholder coalition building. Clients rely on her to simplify uncertainty, map power accurately, and keep momentum through moments that typically stall even strong teams. She is known for building durable relationships that accelerate decision cycles and create leverage when timing is non-negotiable.',
+        highlights: [
+            'Advised transactions and strategic initiatives valued in the billions.',
+            'Led cross-sector campaigns that aligned government, capital, and industry.',
+            'Serves as a confidential partner during inflection-point decisions.'
+        ],
+        education_service: 'Community service includes mentorship and statewide economic development initiatives.',
+        image: './images/leadership/jessica-pacheco.jpg'
+    },
+    {
+        id: 'andrew-ortiz',
+        name: 'Andrew Ortiz',
+        role: 'Principal, Capital & Corporate Strategy',
+        headline: 'Operator-minded strategist focused on execution velocity and board-level clarity.',
+        summary: 'Andrew advises leadership teams on growth strategy, investment readiness, and operating discipline. He works at the intersection of finance and execution, helping organizations pressure-test assumptions, prioritize scarce resources, and align teams around the metrics that matter. His approach is especially valuable when timelines are compressed and decisions carry long-tail consequences for enterprise value. In client engagements, Andrew is known for translating dense analysis into practical action plans that leaders can communicate with confidence to boards, investors, and internal stakeholders. He helps organizations move from ambiguity to accountable progress without sacrificing strategic optionality.',
+        highlights: [
+            'Designed diligence and decision frameworks for private and institutional capital.',
+            'Built go-to-market and expansion plans for regulated and competitive markets.',
+            'Facilitated executive alignment during major strategic pivots.'
+        ],
+        education_service: 'Former volunteer advisor for founder education and first-time executive coaching.',
+        image: './images/leadership/andrew-ortiz.jpg'
+    },
+    {
+        id: 'marisa-nguyen',
+        name: 'Marisa Nguyen',
+        role: 'Principal, Public Affairs & Strategic Communications',
+        headline: 'Policy and communications lead for high-visibility initiatives under scrutiny.',
+        summary: 'Marisa directs public affairs strategies where narrative, regulation, and stakeholder trust must stay synchronized. She has managed campaigns that required simultaneous coordination across government offices, community leaders, and private-sector executives while maintaining message discipline under intense visibility. Her counsel is grounded in risk intelligence and audience insight, ensuring organizations can respond quickly without creating downstream liabilities. Clients value her ability to convert sensitive issues into durable positioning that protects credibility and advances strategic goals. She helps teams communicate with precision in defining moments, then institutionalize those gains into long-term influence.',
+        highlights: [
+            'Orchestrated multi-stakeholder advocacy programs tied to policy outcomes.',
+            'Led crisis and reputation-response playbooks for executive teams.',
+            'Developed communications systems that scale across complex organizations.'
+        ],
+        education_service: 'Public service background includes legislative support and civic coalition work.',
+        image: './images/leadership/marisa-nguyen.jpg'
+    }
+];
+
+function renderLeadershipProfiles(profiles) {
+    const leadershipGrid = document.getElementById('leadership-grid');
+    if (!leadershipGrid) return;
+
+    const profileMarkup = profiles.map((profile) => {
+        const highlightsMarkup = profile.highlights
+            .map((highlight) => `<li>${highlight}</li>`)
+            .join('');
+
+        const imageMarkup = profile.image
+            ? `<img src="${profile.image}" alt="${profile.name}" loading="lazy" decoding="async" />`
+            : '<div class="leadership-image-placeholder" aria-hidden="true"></div>';
+
+        const educationMarkup = profile.education_service
+            ? `<p class="leadership-education">${profile.education_service}</p>`
+            : '';
+
+        return `
+          <article class="leadership-card reveal" data-profile-id="${profile.id}">
+            <div class="leadership-image-wrap">
+              ${imageMarkup}
+            </div>
+            <div class="leadership-card-body">
+              <p class="leadership-role">${profile.role}</p>
+              <h3>${profile.name}</h3>
+              <p class="leadership-headline">${profile.headline}</p>
+              <p class="leadership-summary">${profile.summary}</p>
+              <ul class="leadership-highlights">
+                ${highlightsMarkup}
+              </ul>
+              ${educationMarkup}
+            </div>
+          </article>
+        `;
+    }).join('');
+
+    leadershipGrid.innerHTML = profileMarkup;
+    observeRevealElements(leadershipGrid);
+}
+
+renderLeadershipProfiles(leadershipProfiles);
 
 // Staggered animation for service cards
 const serviceCards = document.querySelectorAll('.service-card');
