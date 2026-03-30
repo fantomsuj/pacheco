@@ -183,6 +183,7 @@ h4 {
 .narrative,
 .services,
 .differentiators,
+.team,
 .testimonials,
 .cta-section,
 footer {
@@ -1147,6 +1148,112 @@ nav.scrolled {
   background: var(--bg-secondary);
 }
 
+/* Team Section */
+.team {
+  padding: 10rem 0;
+  position: relative;
+}
+
+.team-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+  gap: 2rem;
+  align-items: stretch;
+}
+
+.team-spotlight {
+  background: linear-gradient(145deg, rgba(212, 175, 55, 0.1), transparent 65%),
+    var(--bg-elevated);
+  border: 1px solid var(--border-light);
+  padding: clamp(1.5rem, 2vw, 2rem);
+  display: grid;
+  grid-template-columns: minmax(220px, 280px) 1fr;
+  gap: 1.5rem;
+  align-items: center;
+}
+
+.team-spotlight-image {
+  width: 100%;
+  max-width: 280px;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+  border-radius: 1rem;
+  border: 1px solid var(--border-light);
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.35);
+}
+
+.team-spotlight-label {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 0.75rem;
+}
+
+.team-spotlight-content h3 {
+  font-size: clamp(1.9rem, 2.6vw, 2.5rem);
+  margin-bottom: 0.6rem;
+}
+
+.team-role {
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.78rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.team-spotlight-content p {
+  color: var(--text-secondary);
+  max-width: 52ch;
+}
+
+.team-spotlight-cta {
+  display: inline-flex;
+  margin-top: 1.5rem;
+  color: var(--text-primary);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(212, 175, 55, 0.75);
+  padding-bottom: 0.2rem;
+  font-weight: 600;
+  transition: color 0.25s ease, border-color 0.25s ease;
+}
+
+.team-spotlight-cta:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.team-pods {
+  display: grid;
+  gap: 1.25rem;
+  align-content: stretch;
+}
+
+.team-pod {
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  padding: 2rem;
+  transition: border-color 0.3s var(--ease-out-expo),
+    transform 0.3s var(--ease-out-expo);
+}
+
+.team-pod:hover {
+  border-color: var(--border-light);
+  transform: translateY(-3px);
+}
+
+.team-pod h3 {
+  font-size: 1.3rem;
+  margin-bottom: 0.6rem;
+}
+
+.team-pod p {
+  color: var(--text-secondary);
+}
+
 .testimonial-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -1643,6 +1750,10 @@ footer {
     gap: 4rem;
   }
 
+  .team-layout {
+    grid-template-columns: 1fr;
+  }
+
   .services-grid,
   .testimonial-grid {
     grid-template-columns: repeat(2, 1fr);
@@ -1697,6 +1808,7 @@ footer {
   .narrative,
   .services,
   .differentiators,
+  .team,
   .testimonials,
   .cta-section {
     padding: 7rem 0;
@@ -1731,6 +1843,15 @@ footer {
   .scenario-card.offset-1,
   .scenario-card.offset-2 {
     transform: none;
+  }
+
+  .team-spotlight {
+    grid-template-columns: 1fr;
+    text-align: left;
+  }
+
+  .team-spotlight-image {
+    max-width: 260px;
   }
 }
 
@@ -1839,6 +1960,7 @@ footer {
   .narrative,
   .services,
   .differentiators,
+  .team,
   .testimonials,
   .cta-section {
     padding: 5.5rem 0;
