@@ -278,7 +278,11 @@ const observer = new IntersectionObserver((entries) => {
     });
 }, observerOptions);
 
-document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+function observeRevealElements(root = document) {
+    root.querySelectorAll('.reveal').forEach((element) => observer.observe(element));
+}
+
+observeRevealElements();
 
 // Interactive particle network on hero canvas with sunset color cycling
 const canvas = document.getElementById('heroCanvas');
@@ -1092,6 +1096,7 @@ function renderLeadershipProfiles(profiles) {
     }).join('');
 
     leadershipGrid.innerHTML = profileMarkup;
+    observeRevealElements(leadershipGrid);
 }
 
 renderLeadershipProfiles(leadershipProfiles);
