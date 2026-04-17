@@ -378,14 +378,16 @@
         <div class="leaders-grid">
           <article class="leader-card reveal" aria-labelledby="jessica-name">
             <div class="leader-image-wrap">
-              <img
-                class="leader-image"
-                src="./images/jessica-pacheco.webp"
-                alt="Portrait of Jessica Pacheco, Founder and Managing Principal"
-                loading="lazy"
-                decoding="async"
-                onerror="this.onerror=null;this.src='./images/jessica-pacheco.svg';"
-              />
+              <picture>
+                <source srcset="./images/jessica-pacheco.webp" type="image/webp" />
+                <img
+                  class="leader-image"
+                  src="./images/jessica-pacheco.svg"
+                  alt="Portrait of Jessica Pacheco, Founder and Managing Principal"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </picture>
             </div>
             <div class="leader-content">
               <p class="leader-eyebrow">Founder &amp; Managing Principal</p>
