@@ -5,6 +5,9 @@ import Lenis from 'lenis';
 const prefersReducedMotionEarly = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
     || window.innerWidth < 768;
+const hardwareConcurrency = navigator.hardwareConcurrency || 4;
+const deviceMemory = navigator.deviceMemory || 4;
+const isLowEndDevice = hardwareConcurrency <= 4 || deviceMemory <= 4;
 
 const lenis = new Lenis({
     duration: prefersReducedMotionEarly ? 0.5 : 1.2,
@@ -27,46 +30,21 @@ const heroSection = document.querySelector('.hero');
 const heroContent = document.querySelector('.hero-content');
 const heroSunsetAtmosphere = document.querySelector('.sunset-atmosphere');
 const heroCanvas = document.querySelector('.hero-canvas');
+const nav = document.querySelector('nav');
 
-// Parallax effect on scroll (skip if reduced motion preferred)
-if (!prefersReducedMotionEarly && !isMobile) {
-    lenis.on('scroll', ({ scroll }) => {
-        if (!heroSection) return;
+const scrollState = {
+    currentScrollY: window.scrollY,
+    frameQueued: false,
+    heroContentTransform: '',
+    heroContentOpacity: -1,
+    heroAtmosphereTransform: '',
+    heroCanvasTransform: ''
+};
 
-        const heroHeight = heroSection.offsetHeight;
-        const scrollProgress = Math.min(scroll / heroHeight, 1);
-
-        // Only apply parallax when hero is visible
-        if (scroll < heroHeight * 1.5) {
-            // Content moves up faster (creates depth)
-            if (heroContent) {
-                heroContent.style.transform = `translateY(${scroll * 0.3}px)`;
-                heroContent.style.opacity = 1 - scrollProgress * 0.8;
-            }
-
-            // Sunset atmosphere moves slower (background layer)
-            if (heroSunsetAtmosphere) {
-                heroSunsetAtmosphere.style.transform = `translateY(${scroll * 0.15}px) scale(${1 + scrollProgress * 0.1})`;
-            }
-
-            // Canvas moves at medium speed
-            if (heroCanvas) {
-                heroCanvas.style.transform = `translateY(${scroll * 0.2}px)`;
-            }
-        }
-    });
-}
-
-// Utility: Throttle function for performance
-function throttle(func, limit) {
-    let inThrottle;
-    return function(...args) {
-        if (!inThrottle) {
-            func.apply(this, args);
-            inThrottle = true;
-            setTimeout(() => inThrottle = false, limit);
-        }
-    };
+function queueScrollFrame() {
+    if (scrollState.frameQueued) return;
+    scrollState.frameQueued = true;
+    requestAnimationFrame(processScrollEffects);
 }
 
 const analyticsDebug = window.location.hostname === 'localhost' ||
@@ -152,21 +130,6 @@ function trackEvent(eventName, params = {}) {
 // Utility: Detect reduced motion preference
 const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-// Navigation scroll effect (throttled)
-const nav = document.querySelector('nav');
-const handleScroll = throttle(() => {
-    if (!nav) return;
-    if (window.scrollY > 50) {
-        nav.classList.add('scrolled');
-    } else {
-        nav.classList.remove('scrolled');
-    }
-}, 16); // ~60fps
-
-if (nav) {
-    window.addEventListener('scroll', handleScroll, { passive: true });
-}
-
 // Mobile menu toggle
 const mobileMenu = document.querySelector('.mobile-menu');
 const navLinks = document.querySelector('.nav-links');
@@ -207,15 +170,13 @@ function updateMobileMenuAria() {
 // PARALLAX EFFECTS
 // ====================
 const parallaxElements = document.querySelectorAll('[data-parallax]');
-let ticking = false;
 let isHeroVisible = true;
-let parallaxListenerActive = false;
+let isParallaxActive = false;
 
-function updateParallax() {
+function updateParallax(scrollY, viewportHeight) {
     if (prefersReducedMotion || !isHeroVisible) return;
 
-    const scrollY = window.scrollY;
-    const viewportHeight = window.innerHeight;
+    const transforms = [];
 
     parallaxElements.forEach(element => {
         const rect = element.getBoundingClientRect();
@@ -223,43 +184,95 @@ function updateParallax() {
         const elementCenter = elementTop + rect.height / 2;
         const viewportCenter = scrollY + viewportHeight / 2;
 
-        // Only apply parallax when element is in or near viewport
         if (rect.top < viewportHeight && rect.bottom > 0) {
             const speed = parseFloat(element.dataset.speed) || 0.2;
             const distance = (viewportCenter - elementCenter) * speed;
-
-            // Apply transform
-            element.style.transform = `translateY(${distance}px)`;
+            transforms.push({ element, transform: `translateY(${distance}px)` });
         }
     });
 
-    ticking = false;
-}
-
-function onParallaxScroll() {
-    if (!ticking) {
-        requestAnimationFrame(updateParallax);
-        ticking = true;
-    }
+    transforms.forEach(({ element, transform }) => {
+        if (element.dataset.parallaxTransform !== transform) {
+            element.style.transform = transform;
+            element.dataset.parallaxTransform = transform;
+        }
+    });
 }
 
 function enableParallaxListener() {
-    if (parallaxListenerActive || isMobile || prefersReducedMotion) return;
-    window.addEventListener('scroll', onParallaxScroll, { passive: true });
-    parallaxListenerActive = true;
+    if (isParallaxActive || isMobile || prefersReducedMotion) return;
+    isParallaxActive = true;
+    queueScrollFrame();
 }
 
 function disableParallaxListener() {
-    if (!parallaxListenerActive) return;
-    window.removeEventListener('scroll', onParallaxScroll);
-    parallaxListenerActive = false;
+    if (!isParallaxActive) return;
+    isParallaxActive = false;
 }
+
+function processScrollEffects() {
+    scrollState.frameQueued = false;
+    const scrollY = scrollState.currentScrollY;
+    const viewportHeight = window.innerHeight;
+
+    if (nav) {
+        nav.classList.toggle('scrolled', scrollY > 50);
+    }
+
+    if (!prefersReducedMotionEarly && !isMobile && heroSection) {
+        const heroHeight = heroSection.offsetHeight;
+        const scrollProgress = Math.min(scrollY / heroHeight, 1);
+
+        if (scrollY < heroHeight * 1.5) {
+            if (heroContent) {
+                const contentTransform = `translateY(${scrollY * 0.3}px)`;
+                const contentOpacity = 1 - scrollProgress * 0.8;
+                if (contentTransform !== scrollState.heroContentTransform) {
+                    heroContent.style.transform = contentTransform;
+                    scrollState.heroContentTransform = contentTransform;
+                }
+                if (contentOpacity !== scrollState.heroContentOpacity) {
+                    heroContent.style.opacity = contentOpacity;
+                    scrollState.heroContentOpacity = contentOpacity;
+                }
+            }
+
+            if (heroSunsetAtmosphere) {
+                const atmosphereTransform = `translateY(${scrollY * 0.15}px) scale(${1 + scrollProgress * 0.1})`;
+                if (atmosphereTransform !== scrollState.heroAtmosphereTransform) {
+                    heroSunsetAtmosphere.style.transform = atmosphereTransform;
+                    scrollState.heroAtmosphereTransform = atmosphereTransform;
+                }
+            }
+
+            if (heroCanvas) {
+                const canvasTransform = `translateY(${scrollY * 0.2}px)`;
+                if (canvasTransform !== scrollState.heroCanvasTransform) {
+                    heroCanvas.style.transform = canvasTransform;
+                    scrollState.heroCanvasTransform = canvasTransform;
+                }
+            }
+        }
+    }
+
+    if (isParallaxActive) {
+        updateParallax(scrollY, viewportHeight);
+    }
+}
+
+lenis.on('scroll', ({ scroll }) => {
+    scrollState.currentScrollY = scroll;
+    queueScrollFrame();
+});
+
+window.addEventListener('scroll', () => {
+    scrollState.currentScrollY = window.scrollY;
+    queueScrollFrame();
+}, { passive: true });
 
 // Only enable parallax on non-mobile and with no reduced motion preference
 if (!isMobile && !prefersReducedMotion) {
     enableParallaxListener();
-    // Initial call
-    updateParallax();
 }
 
 // Intersection Observer for reveal animations
@@ -297,8 +310,8 @@ let colorTime = 0;
 let isPageVisible = !document.hidden;
 let isCanvasVisible = true;
 let isAnimating = false;
-let mouseTrackingEnabled = !prefersReducedMotion;
-const shouldUseLightEffects = isMobile || prefersReducedMotion;
+let mouseTrackingEnabled = !prefersReducedMotion && !isLowEndDevice;
+const shouldUseLightEffects = isMobile || prefersReducedMotion || isLowEndDevice;
 
 if (shouldUseLightEffects && heroCanvas) {
     heroCanvas.style.display = 'none';
@@ -415,8 +428,8 @@ function init() {
     if (prefersReducedMotion) {
         maxParticles = 20; // Minimal particles for reduced motion
         densityFactor = 30000;
-    } else if (isMobile) {
-        maxParticles = 40; // Reduced for mobile performance
+    } else if (isMobile || isLowEndDevice) {
+        maxParticles = 40; // Reduced for mobile / low-end device performance
         densityFactor = 20000;
     }
     
@@ -570,7 +583,6 @@ const canvasObserver = new IntersectionObserver((entries) => {
         isHeroVisible = entry.isIntersecting;
 
         if (!isHeroVisible) {
-            ticking = false;
             disableParallaxListener();
         } else if (isPageVisible) {
             enableParallaxListener();
@@ -703,6 +715,8 @@ window.addEventListener('resize', () => {
         }
     }, 250);
 });
+
+queueScrollFrame();
 
 // Smooth scroll for navigation links (using Lenis)
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
