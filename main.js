@@ -5,13 +5,17 @@ import Lenis from 'lenis';
 const prefersReducedMotionEarly = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
     || window.innerWidth < 768;
+const deviceMemory = 'deviceMemory' in navigator ? navigator.deviceMemory : Infinity;
+const hasLimitedHardware = (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4)
+    || deviceMemory <= 4;
+const shouldUseLiteMotion = prefersReducedMotionEarly || isMobile || hasLimitedHardware;
 
 const lenis = new Lenis({
-    duration: prefersReducedMotionEarly ? 0.5 : 1.2,
+    duration: shouldUseLiteMotion ? 0.5 : 1.2,
     easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), // Smooth exponential ease
     orientation: 'vertical',
     gestureOrientation: 'vertical',
-    smoothWheel: !prefersReducedMotionEarly,
+    smoothWheel: !shouldUseLiteMotion,
     wheelMultiplier: 1,
     touchMultiplier: 2,
 });
@@ -27,35 +31,6 @@ const heroSection = document.querySelector('.hero');
 const heroContent = document.querySelector('.hero-content');
 const heroSunsetAtmosphere = document.querySelector('.sunset-atmosphere');
 const heroCanvas = document.querySelector('.hero-canvas');
-
-// Parallax effect on scroll (skip if reduced motion preferred)
-if (!prefersReducedMotionEarly && !isMobile) {
-    lenis.on('scroll', ({ scroll }) => {
-        if (!heroSection) return;
-
-        const heroHeight = heroSection.offsetHeight;
-        const scrollProgress = Math.min(scroll / heroHeight, 1);
-
-        // Only apply parallax when hero is visible
-        if (scroll < heroHeight * 1.5) {
-            // Content moves up faster (creates depth)
-            if (heroContent) {
-                heroContent.style.transform = `translateY(${scroll * 0.3}px)`;
-                heroContent.style.opacity = 1 - scrollProgress * 0.8;
-            }
-
-            // Sunset atmosphere moves slower (background layer)
-            if (heroSunsetAtmosphere) {
-                heroSunsetAtmosphere.style.transform = `translateY(${scroll * 0.15}px) scale(${1 + scrollProgress * 0.1})`;
-            }
-
-            // Canvas moves at medium speed
-            if (heroCanvas) {
-                heroCanvas.style.transform = `translateY(${scroll * 0.2}px)`;
-            }
-        }
-    });
-}
 
 // Utility: Throttle function for performance
 function throttle(func, limit) {
@@ -212,24 +187,66 @@ let isHeroVisible = true;
 let parallaxListenerActive = false;
 
 function updateParallax() {
-    if (prefersReducedMotion || !isHeroVisible) return;
+    if (shouldUseLiteMotion || !isHeroVisible) return;
 
     const scrollY = window.scrollY;
     const viewportHeight = window.innerHeight;
+    const updates = [];
 
     parallaxElements.forEach(element => {
         const rect = element.getBoundingClientRect();
-        const elementTop = rect.top + scrollY;
-        const elementCenter = elementTop + rect.height / 2;
-        const viewportCenter = scrollY + viewportHeight / 2;
 
         // Only apply parallax when element is in or near viewport
         if (rect.top < viewportHeight && rect.bottom > 0) {
+            const elementTop = rect.top + scrollY;
+            const elementCenter = elementTop + rect.height / 2;
+            const viewportCenter = scrollY + viewportHeight / 2;
             const speed = parseFloat(element.dataset.speed) || 0.2;
             const distance = (viewportCenter - elementCenter) * speed;
 
-            // Apply transform
-            element.style.transform = `translateY(${distance}px)`;
+            updates.push({
+                element,
+                transform: `translateY(${distance}px)`,
+            });
+        }
+    });
+
+    if (heroSection) {
+        const heroHeight = heroSection.offsetHeight;
+        const scrollProgress = Math.min(scrollY / heroHeight, 1);
+
+        // Only apply hero wrapper movement while the hero is near the viewport.
+        if (scrollY < heroHeight * 1.5) {
+            if (heroContent) {
+                updates.push({
+                    element: heroContent,
+                    transform: `translateY(${scrollY * 0.3}px)`,
+                    opacity: `${1 - scrollProgress * 0.8}`,
+                });
+            }
+
+            if (heroSunsetAtmosphere) {
+                updates.push({
+                    element: heroSunsetAtmosphere,
+                    transform: `translateY(${scrollY * 0.15}px) scale(${1 + scrollProgress * 0.1})`,
+                });
+            }
+
+            if (heroCanvas) {
+                updates.push({
+                    element: heroCanvas,
+                    transform: `translateY(${scrollY * 0.2}px)`,
+                });
+            }
+        }
+    }
+
+    updates.forEach(({ element, transform, opacity }) => {
+        if (element.style.transform !== transform) {
+            element.style.transform = transform;
+        }
+        if (opacity !== undefined && element.style.opacity !== opacity) {
+            element.style.opacity = opacity;
         }
     });
 
@@ -244,7 +261,7 @@ function onParallaxScroll() {
 }
 
 function enableParallaxListener() {
-    if (parallaxListenerActive || isMobile || prefersReducedMotion) return;
+    if (parallaxListenerActive || shouldUseLiteMotion) return;
     window.addEventListener('scroll', onParallaxScroll, { passive: true });
     parallaxListenerActive = true;
 }
@@ -255,8 +272,8 @@ function disableParallaxListener() {
     parallaxListenerActive = false;
 }
 
-// Only enable parallax on non-mobile and with no reduced motion preference
-if (!isMobile && !prefersReducedMotion) {
+// Only enable parallax for devices using the full motion profile.
+if (!shouldUseLiteMotion) {
     enableParallaxListener();
     // Initial call
     updateParallax();
@@ -298,7 +315,7 @@ let isPageVisible = !document.hidden;
 let isCanvasVisible = true;
 let isAnimating = false;
 let mouseTrackingEnabled = !prefersReducedMotion;
-const shouldUseLightEffects = isMobile || prefersReducedMotion;
+const shouldUseLightEffects = shouldUseLiteMotion;
 
 if (shouldUseLightEffects && heroCanvas) {
     heroCanvas.style.display = 'none';
