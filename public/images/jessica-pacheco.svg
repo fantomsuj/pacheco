@@ -1,0 +1,24 @@
+<svg width="800" height="1000" viewBox="0 0 800 1000" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Jessica Pacheco portrait placeholder</title>
+  <desc id="desc">Stylized portrait placeholder for Jessica Pacheco used in the Team founder spotlight card.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="800" y2="1000" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#D9DEE6"/>
+      <stop offset="1" stop-color="#AEB7C6"/>
+    </linearGradient>
+    <linearGradient id="dress" x1="400" y1="640" x2="400" y2="1000" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#2A2F3B"/>
+      <stop offset="1" stop-color="#12151D"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="1000" fill="url(#bg)"/>
+  <ellipse cx="400" cy="315" rx="135" ry="155" fill="#F2D6C7"/>
+  <path d="M252 278C272 174 334 123 396 123C472 123 532 184 548 270C502 215 455 188 393 188C329 188 287 216 252 278Z" fill="#7A6B62"/>
+  <path d="M204 980H596L542 735C514 678 462 641 400 641C338 641 286 678 258 735L204 980Z" fill="url(#dress)"/>
+  <circle cx="346" cy="302" r="11" fill="#2B2B2B"/>
+  <circle cx="454" cy="302" r="11" fill="#2B2B2B"/>
+  <path d="M355 378C383 395 417 395 445 378" stroke="#D38F8B" stroke-width="8" stroke-linecap="round"/>
+  <rect x="44" y="788" width="712" height="162" rx="16" fill="#0E1016" fill-opacity="0.68"/>
+  <text x="80" y="854" fill="#FFFFFF" font-family="Manrope, Arial, sans-serif" font-size="54" font-weight="700">Jessica Pacheco</text>
+  <text x="80" y="905" fill="#D8DEE8" font-family="Manrope, Arial, sans-serif" font-size="28" font-weight="500">Founder &amp; Principal</text>
+</svg>

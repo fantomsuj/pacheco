@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.googletagmanager.com 'sha256-8ZcWw2hxBHI6q6hjz9lNb5+Cw8btP8o27GpUAr2dxJQ=' 'sha256-v9IUZublr3vZnT4LyBrRuHyD4I2Ecf+VLJpvBMLPZ1Q='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://www.google-analytics.com https://www.googletagmanager.com; connect-src 'self' https://www.google-analytics.com https://region1.google-analytics.com https://www.googletagmanager.com; form-action 'self' https://formspree.io; base-uri 'self'; object-src 'none';" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.googletagmanager.com 'sha256-8ZcWw2hxBHI6q6hjz9lNb5+Cw8btP8o27GpUAr2dxJQ=' 'sha256-v9IUZublr3vZnT4LyBrRuHyD4I2Ecf+VLJpvBMLPZ1Q='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://www.google-analytics.com https://www.googletagmanager.com; connect-src 'self' https://www.google-analytics.com https://region1.google-analytics.com https://www.googletagmanager.com https://formspree.io; form-action 'self' https://formspree.io; base-uri 'self'; object-src 'none';" />
     <meta name="referrer" content="strict-origin-when-cross-origin" />
     <title>Pacheco Ventures | Strategic Advisory for Arizona's Elite</title>
     <meta name="description" content="Pacheco Ventures architects decisive advantage for Arizona's foremost leaders through investor-grade strategy, real-time policy intelligence, and unmatched execution.">
@@ -89,8 +89,7 @@
       href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Manrope:wght@400;600;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="./style.css" />
-    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 
   </head>
   <body>
@@ -127,7 +126,6 @@
             <div class="light-rays-secondary" data-parallax data-speed="0.15"></div>
             <div class="dust-particles" data-parallax data-speed="0.4"></div>
             <div class="horizon-glow"></div>
-            <div class="sunbeam-flash"></div>
         </div>
         <canvas class="hero-canvas" id="heroCanvas" aria-hidden="true"></canvas>
         <div class="hero-gradient" aria-hidden="true"></div>
@@ -137,15 +135,14 @@
             <p class="hero-subtitle" data-parallax data-speed="0.2">We architect decisive advantage for Arizona's foremost leaders through investor-grade strategy, real-time policy intelligence, and unmatched execution.</p>
             <div class="hero-actions" data-parallax data-speed="0.15">
                 <button class="btn-primary" aria-label="Request a strategic assessment consultation">Request Strategic Assessment</button>
-                <button class="btn-secondary" aria-label="View our portfolio of work">View Our Work</button>
             </div>
             <div class="hero-trust" data-parallax data-speed="0.1" aria-label="Trusted clients">
                 <p class="hero-trust-label">Trusted by Arizona's Most Influential</p>
                 <div class="trust-logos" role="list">
-                    <span class="trust-logo" role="listitem">Arizona Cardinals</span>
-                    <span class="trust-logo" role="listitem">Freeport-McMoRan</span>
-                    <span class="trust-logo" role="listitem">APS Energy</span>
-                    <span class="trust-logo" role="listitem">Phoenix Suns</span>
+                    <span class="trust-logo" role="listitem" data-reveal-order="1">Arizona Cardinals</span>
+                    <span class="trust-logo" role="listitem" data-reveal-order="2">Freeport-McMoRan</span>
+                    <span class="trust-logo" role="listitem" data-reveal-order="3">APS Energy</span>
+                    <span class="trust-logo" role="listitem" data-reveal-order="4">Phoenix Suns</span>
                 </div>
             </div>
         </div>
@@ -375,13 +372,16 @@
           </p>
         </div>
         <div class="leaders-grid">
-          <article class="leader-card reveal" aria-labelledby="jessica-name">
+          <article
+            class="leader-card leader-card--anchor reveal"
+            aria-labelledby="jessica-name"
+          >
             <div class="leader-image-wrap">
               <picture>
-                <source srcset="./images/jessica-pacheco.webp" type="image/webp" />
+                <source srcset="/images/jessica-pacheco.webp" type="image/webp" />
                 <img
                   class="leader-image"
-                  src="./images/jessica-pacheco.svg"
+                  src="/images/jessica-pacheco.svg"
                   alt="Portrait of Jessica Pacheco, Founding Partner"
                   loading="lazy"
                   decoding="async"
@@ -399,11 +399,14 @@
               </p>
             </div>
           </article>
-          <article class="leader-card reveal" aria-labelledby="andres-name">
+          <article
+            class="leader-card leader-card--partner leader-card--partner-primary reveal"
+            aria-labelledby="andres-name"
+          >
             <div class="leader-image-wrap">
               <img
                 class="leader-image"
-                src="./images/andres-pacheco.jpg"
+                src="/images/andres-pacheco.jpg"
                 alt="Portrait of Andres Pacheco, Partner"
                 loading="lazy"
                 decoding="async"
@@ -420,11 +423,18 @@
               </p>
             </div>
           </article>
-          <article class="leader-card reveal" aria-labelledby="michael-name">
+          <article
+            class="leader-card leader-card--partner leader-card--partner-secondary reveal"
+            aria-labelledby="michael-name"
+          >
             <div class="leader-image-wrap">
-              <div class="leader-image-placeholder" aria-hidden="true">
-                <span>MV</span>
-              </div>
+              <img
+                class="leader-image"
+                src="/images/michael-vargas.jpg"
+                alt="Portrait of Michael Vargas, Partner"
+                loading="lazy"
+                decoding="async"
+              />
             </div>
             <div class="leader-content">
               <p class="leader-eyebrow">Partner</p>
@@ -437,11 +447,14 @@
               </p>
             </div>
           </article>
-          <article class="leader-card reveal" aria-labelledby="glenn-name">
+          <article
+            class="leader-card leader-card--consultant leader-card--consultant-left reveal"
+            aria-labelledby="glenn-name"
+          >
             <div class="leader-image-wrap">
               <img
                 class="leader-image"
-                src="./images/glenn-hamer.png"
+                src="/images/glenn-hamer.png"
                 alt="Portrait of Glenn Hamer, Senior Consultant"
                 loading="lazy"
                 decoding="async"
@@ -458,11 +471,14 @@
               </p>
             </div>
           </article>
-          <article class="leader-card reveal" aria-labelledby="grant-name">
+          <article
+            class="leader-card leader-card--consultant leader-card--consultant-center reveal"
+            aria-labelledby="grant-name"
+          >
             <div class="leader-image-wrap">
               <img
                 class="leader-image"
-                src="./images/grant-packwood.jpg"
+                src="/images/grant-packwood.jpg"
                 alt="Portrait of Grant Packwood, Senior Consultant"
                 loading="lazy"
                 decoding="async"
@@ -479,20 +495,27 @@
               </p>
             </div>
           </article>
-          <article class="leader-card reveal" aria-labelledby="rachelle-name">
+          <article
+            class="leader-card leader-card--consultant leader-card--consultant-right reveal"
+            aria-labelledby="rachelle-name"
+          >
             <div class="leader-image-wrap">
-              <div class="leader-image-placeholder" aria-hidden="true">
-                <span>RL</span>
-              </div>
+              <img
+                class="leader-image"
+                src="/images/rachelle-lindblom.jpg"
+                alt="Portrait of Rachelle Lindblom, Senior Consultant"
+                loading="lazy"
+                decoding="async"
+              />
             </div>
             <div class="leader-content">
               <p class="leader-eyebrow">Senior Consultant</p>
               <h3 id="rachelle-name">Rachelle Lindblom</h3>
               <p class="leader-bio">
-                Rachelle brings economic development, infrastructure, and civic
-                engagement perspective to client work. She supports complex
-                initiatives with disciplined coordination, stakeholder care, and
-                a clear sense of Arizona&rsquo;s growth priorities.
+                Rachelle is a sixth-generation East Valley native with deep
+                experience in economic development, public policy, campaigns,
+                and private industry. She connects government, business, and
+                community leaders to advance Arizona&rsquo;s growth priorities.
               </p>
             </div>
           </article>
@@ -682,6 +705,6 @@
       </div>
     </footer>
 
-    <script type="module" src="./main.js"></script>
+    <script type="module" src="./src/js/main.js"></script>
   </body>
 </html>

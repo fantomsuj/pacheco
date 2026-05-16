@@ -141,14 +141,21 @@ Strategic advisory firm landing page redesign. Premium dark theme with Arizona s
 
 ## File Structure
 ```
-shanghai/
-├── index.html          # Main landing page
-├── main.js             # Interactive features & canvas
-├── style.css           # All styling (25KB)
-├── favicon.svg         # Brand icon
-├── newindex.html       # Alternative version (unused?)
-├── package.json        # Vite build setup
-└── CLAUDE.md           # This file
+pacheco/
+├── index.html                  # Main landing page
+├── public/
+│   ├── favicon.svg             # Brand icon
+│   └── images/                 # Static team/profile assets
+├── src/
+│   ├── js/
+│   │   ├── analytics.js        # Deferred GA loader
+│   │   └── main.js             # Interactive features & canvas
+│   └── styles/
+│       └── style.css           # Site styling
+├── docs/
+│   └── archive/newindex.html   # Archived alternate prototype
+├── package.json                # Vite build setup
+└── CLAUDE.md                   # Planning notes
 ```
 
 ---
@@ -190,4 +197,4 @@ shanghai/
 
 ---
 
-*Last updated: 2026-01-29*
+*Last updated: 2026-05-16*
