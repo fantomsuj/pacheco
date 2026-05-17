@@ -581,6 +581,11 @@ window.addEventListener('resize', () => {
     }, 250);
 });
 
+function getAnchorScrollOffset() {
+    const nav = document.querySelector('nav');
+    return nav ? -(nav.offsetHeight + 16) : 0;
+}
+
 // Smooth scroll for navigation links (using Lenis)
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function(e) {
@@ -601,7 +606,7 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         if (!target) return;
 
         lenis.scrollTo(target, {
-            offset: 0,
+            offset: getAnchorScrollOffset(),
             duration: prefersReducedMotion ? 0 : 1.5,
         });
     });
