@@ -1,4 +1,5 @@
 // Lenis smooth scroll
+import '../styles/style.css';
 import Lenis from 'lenis';
 
 // Check for reduced motion preference early
@@ -50,25 +51,10 @@ const analyticsDebug = window.location.hostname === 'localhost' ||
 let analyticsLoaded = false;
 let nonCriticalFontsLoaded = false;
 
-function loadScriptOnce(src) {
-    return new Promise((resolve, reject) => {
-        if (document.querySelector(`script[src="${src}"]`)) {
-            resolve();
-            return;
-        }
-        const script = document.createElement('script');
-        script.src = src;
-        script.defer = true;
-        script.onload = () => resolve();
-        script.onerror = () => reject(new Error(`Failed to load script: ${src}`));
-        document.head.appendChild(script);
-    });
-}
-
 function loadAnalytics() {
     if (analyticsLoaded) return;
     analyticsLoaded = true;
-    loadScriptOnce('./analytics.js').catch((error) => {
+    import('./analytics.js').catch((error) => {
         analyticsLoaded = false;
         if (analyticsDebug) {
             console.warn(error);
@@ -301,192 +287,135 @@ function observeRevealElements(root = document) {
 
 observeRevealElements();
 
-// Interactive particle network on hero canvas with sunset color cycling
+// Quiet atmospheric canvas for the hero background.
 const canvas = document.getElementById('heroCanvas');
 const ctx = canvas?.getContext?.('2d');
-let particles = [];
-let mouseX = null;
-let mouseY = null;
+let atmosphereParticles = [];
 let animationId;
-let colorTime = 0;
+let frameTime = 0;
 
 // Performance state management
 let isPageVisible = !document.hidden;
 let isCanvasVisible = true;
 let isAnimating = false;
-let mouseTrackingEnabled = !prefersReducedMotion;
 const shouldUseLightEffects = shouldUseLiteMotion;
 
 if (shouldUseLightEffects && heroCanvas) {
     heroCanvas.style.display = 'none';
 }
 
-// Sunset color palette for cycling
-const sunsetColors = [
-    { r: 255, g: 140, b: 66 },   // Warm orange
-    { r: 201, g: 108, b: 77 },   // Terracotta (base accent)
-    { r: 212, g: 165, b: 116 },  // Gold
-    { r: 255, g: 120, b: 80 },   // Coral
-    { r: 180, g: 100, b: 120 },  // Dusty rose
-    { r: 156, g: 82, b: 100 },   // Mauve
-    { r: 201, g: 108, b: 77 },   // Back to terracotta
-];
-
-function interpolateColor(color1, color2, factor) {
-    return {
-        r: Math.round(color1.r + (color2.r - color1.r) * factor),
-        g: Math.round(color1.g + (color2.g - color1.g) * factor),
-        b: Math.round(color1.b + (color2.b - color1.b) * factor)
-    };
-}
-
-function getCurrentSunsetColor(offset = 0) {
-    const adjustedTime = (colorTime + offset) % 1;
-    const totalSegments = sunsetColors.length - 1;
-    const segment = adjustedTime * totalSegments;
-    const index = Math.floor(segment);
-    const factor = segment - index;
-    
-    const color1 = sunsetColors[index];
-    const color2 = sunsetColors[Math.min(index + 1, sunsetColors.length - 1)];
-    
-    return interpolateColor(color1, color2, factor);
-}
-
 function resizeCanvas() {
-    if (!canvas) return;
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+    if (!canvas || !ctx) return;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = Math.floor(window.innerWidth * dpr);
+    canvas.height = Math.floor(window.innerHeight * dpr);
+    canvas.style.width = `${window.innerWidth}px`;
+    canvas.style.height = `${window.innerHeight}px`;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 }
 
-class Particle {
+class AtmosphereParticle {
     constructor() {
-        this.x = Math.random() * canvas.width;
-        this.y = Math.random() * canvas.height;
-        this.size = Math.random() * 2 + 1;
-        this.baseX = this.x;
-        this.baseY = this.y;
-        this.density = Math.random() * 30 + 1;
-        this.vx = (Math.random() - 0.5) * 0.5;
-        this.vy = (Math.random() - 0.5) * 0.5;
-        this.colorOffset = Math.random() * 0.3; // Each particle has slight color variation
-        this.pulsePhase = Math.random() * Math.PI * 2;
+        this.reset(true);
+    }
+
+    reset(randomizeX = false) {
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+        this.x = randomizeX ? Math.random() * width : width + Math.random() * 80;
+        this.y = height * (0.12 + Math.random() * 0.62);
+        this.length = 24 + Math.random() * 96;
+        this.width = 0.45 + Math.random() * 0.85;
+        this.alpha = 0.026 + Math.random() * 0.052;
+        this.speed = 0.035 + Math.random() * 0.085;
+        this.drift = (Math.random() - 0.5) * 0.018;
+        this.phase = Math.random() * Math.PI * 2;
+        this.warmth = Math.random();
     }
 
     update() {
-        const maxDistance = 150;
+        this.x -= this.speed;
+        this.y += Math.sin(frameTime * 0.014 + this.phase) * 0.012 + this.drift;
 
-        if (mouseTrackingEnabled && mouseX !== null && mouseY !== null) {
-            const dx = mouseX - this.x;
-            const dy = mouseY - this.y;
-            const distance = Math.sqrt(dx * dx + dy * dy);
-
-            if (distance > 0 && distance < maxDistance) {
-                const force = (maxDistance - distance) / maxDistance;
-                const directionX = (dx / distance) * force * this.density * 0.5;
-                const directionY = (dy / distance) * force * this.density * 0.5;
-                this.x -= directionX;
-                this.y -= directionY;
-                return;
-            }
+        if (this.x + this.length < -80) {
+            this.reset();
         }
-
-        // Gentle floating motion
-        this.x += this.vx;
-        this.y += this.vy;
-
-        // Boundary check
-        if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
-        if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
     }
 
     draw() {
-        const color = getCurrentSunsetColor(this.colorOffset);
-        const pulse = 0.5 + 0.3 * Math.sin(colorTime * Math.PI * 4 + this.pulsePhase);
-        ctx.fillStyle = `rgba(${color.r}, ${color.g}, ${color.b}, ${0.5 + pulse * 0.3})`;
+        const pulse = 0.72 + Math.sin(frameTime * 0.012 + this.phase) * 0.18;
+        const color = this.warmth > 0.48 ? '212, 165, 116' : '245, 240, 235';
+        const gradient = ctx.createLinearGradient(this.x, this.y, this.x + this.length, this.y);
+        gradient.addColorStop(0, `rgba(${color}, 0)`);
+        gradient.addColorStop(0.45, `rgba(${color}, ${this.alpha * pulse})`);
+        gradient.addColorStop(1, `rgba(${color}, 0)`);
+
+        ctx.strokeStyle = gradient;
+        ctx.lineWidth = this.width;
         ctx.beginPath();
-        ctx.arc(this.x, this.y, this.size * (0.8 + pulse * 0.4), 0, Math.PI * 2);
-        ctx.fill();
-        
-        // Add subtle glow for larger particles
-        if (this.size > 1.5) {
-            ctx.fillStyle = `rgba(${color.r}, ${color.g}, ${color.b}, ${0.1 + pulse * 0.1})`;
-            ctx.beginPath();
-            ctx.arc(this.x, this.y, this.size * 3, 0, Math.PI * 2);
-            ctx.fill();
+        ctx.moveTo(this.x, this.y);
+        ctx.lineTo(this.x + this.length, this.y + Math.sin(this.phase) * 3);
+        ctx.stroke();
+    }
+}
+
+class DustMote {
+    constructor() {
+        this.x = Math.random() * window.innerWidth;
+        this.y = Math.random() * window.innerHeight;
+        this.size = Math.random() * 2 + 1;
+        this.alpha = 0.018 + Math.random() * 0.032;
+        this.speed = 0.01 + Math.random() * 0.028;
+        this.phase = Math.random() * Math.PI * 2;
+    }
+
+    update() {
+        this.x -= this.speed;
+        this.y += Math.sin(frameTime * 0.01 + this.phase) * 0.015;
+
+        if (this.x < -10) {
+            this.x = window.innerWidth + Math.random() * 40;
+            this.y = Math.random() * window.innerHeight;
         }
+    }
+
+    draw() {
+        const pulse = 0.75 + Math.sin(frameTime * 0.008 + this.phase) * 0.18;
+        ctx.fillStyle = `rgba(245, 240, 235, ${this.alpha * pulse})`;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fill();
     }
 }
 
 function init() {
     if (!canvas || !ctx) return;
     if (shouldUseLightEffects) {
-        particles = [];
+        atmosphereParticles = [];
         return;
     }
-    particles = [];
-    // Optimize particle count based on device and preferences
-    let maxParticles = 100;
-    let densityFactor = 15000;
-    
-    if (prefersReducedMotion) {
-        maxParticles = 20; // Minimal particles for reduced motion
-        densityFactor = 30000;
-    } else if (isMobile) {
-        maxParticles = 40; // Reduced for mobile performance
-        densityFactor = 20000;
-    }
-    
-    const numberOfParticles = Math.min(
-        (canvas.width * canvas.height) / densityFactor, 
-        maxParticles
-    );
-    
-    for (let i = 0; i < numberOfParticles; i++) {
-        particles.push(new Particle());
-    }
-}
 
-function connectParticles() {
-    if (!ctx) return;
-    // Adjust connection distance based on device
-    const maxDistance = isMobile ? 100 : 120;
-    const maxDistanceSquared = maxDistance * maxDistance; // Avoid sqrt when possible
-    
-    for (let a = 0; a < particles.length; a++) {
-        for (let b = a + 1; b < particles.length; b++) {
-            const dx = particles[a].x - particles[b].x;
-            const dy = particles[a].y - particles[b].y;
-            
-            // Early exit: check squared distance first (avoid expensive sqrt)
-            const distanceSquared = dx * dx + dy * dy;
-            if (distanceSquared > maxDistanceSquared) continue;
-            
-            const distance = Math.sqrt(distanceSquared);
-            const opacity = 1 - (distance / maxDistance);
-            
-            // Blend between the two particles' colors
-            const colorA = getCurrentSunsetColor(particles[a].colorOffset);
-            const colorB = getCurrentSunsetColor(particles[b].colorOffset);
-            const avgColor = interpolateColor(colorA, colorB, 0.5);
-            
-            ctx.strokeStyle = `rgba(${avgColor.r}, ${avgColor.g}, ${avgColor.b}, ${opacity * 0.25})`;
-            ctx.lineWidth = 1;
-            ctx.beginPath();
-            ctx.moveTo(particles[a].x, particles[a].y);
-            ctx.lineTo(particles[b].x, particles[b].y);
-            ctx.stroke();
-        }
+    atmosphereParticles = [];
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+    const fieldCount = prefersReducedMotion ? 8 : Math.min(Math.round((width * height) / 52000), 34);
+    const dustCount = prefersReducedMotion ? 10 : Math.min(Math.round((width * height) / 90000), 22);
+
+    for (let i = 0; i < fieldCount; i++) {
+        atmosphereParticles.push(new AtmosphereParticle());
+    }
+
+    for (let i = 0; i < dustCount; i++) {
+        atmosphereParticles.push(new DustMote());
     }
 }
 
 function renderStaticFrame() {
     if (!ctx) return;
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    particles.forEach(particle => {
+    ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+    atmosphereParticles.forEach(particle => {
         particle.draw();
     });
-    connectParticles();
 }
 
 function animate() {
@@ -508,17 +437,14 @@ function animate() {
     }
     
     isAnimating = true;
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    frameTime += 1;
+    ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
     
-    // Update color time (complete cycle every 20 seconds)
-    colorTime = (colorTime + 0.0008) % 1;
-    
-    particles.forEach(particle => {
+    atmosphereParticles.forEach(particle => {
         particle.update();
         particle.draw();
     });
-    
-    connectParticles();
+
     animationId = requestAnimationFrame(animate);
 }
 
@@ -543,26 +469,6 @@ function stopAnimation() {
     isAnimating = false;
 }
 
-// Mouse tracking (conditional based on animation state)
-const handleMouseMove = (e) => {
-    if (mouseTrackingEnabled && isAnimating && !shouldUseLightEffects) {
-        mouseX = e.clientX;
-        mouseY = e.clientY;
-    }
-};
-
-const handleTouchMove = (e) => {
-    if (mouseTrackingEnabled && isAnimating && !shouldUseLightEffects) {
-        const touch = e.touches && e.touches[0];
-        if (!touch) return;
-        mouseX = touch.clientX;
-        mouseY = touch.clientY;
-    }
-};
-
-document.addEventListener('mousemove', handleMouseMove, { passive: true });
-document.addEventListener('touchmove', handleTouchMove, { passive: true });
-
 // Page Visibility API - pause animations when tab is hidden
 document.addEventListener('visibilitychange', () => {
     isPageVisible = !document.hidden;
@@ -571,12 +477,10 @@ document.addEventListener('visibilitychange', () => {
         if (isHeroVisible) enableParallaxListener();
         startAnimation();
         startSunsetIntensityUpdates();
-        startSunbeamEffect();
     } else {
         disableParallaxListener();
         stopAnimation();
         stopSunsetIntensityUpdates();
-        stopSunbeamEffect();
     }
 });
 
@@ -596,11 +500,9 @@ const canvasObserver = new IntersectionObserver((entries) => {
         if (isCanvasVisible && isPageVisible) {
             startAnimation();
             startSunsetIntensityUpdates();
-            startSunbeamEffect();
         } else {
             stopAnimation();
             stopSunsetIntensityUpdates();
-            stopSunbeamEffect();
         }
     });
 }, { threshold: 0.1 });
@@ -616,7 +518,6 @@ if (heroSection && canvas && ctx) {
 window.addEventListener('beforeunload', () => {
     stopAnimation();
     stopSunsetIntensityUpdates();
-    stopSunbeamEffect();
     canvasObserver.disconnect();
 });
 
@@ -664,49 +565,8 @@ function stopSunsetIntensityUpdates() {
     sunsetIntervalId = null;
 }
 
-// Occasional sunbeam flash effect
-function triggerSunbeam() {
-    const sunbeam = document.querySelector('.sunbeam-flash');
-    if (!sunbeam || prefersReducedMotion) return;
-    sunbeam.classList.remove('active');
-    
-    // Force reflow
-    void sunbeam.offsetWidth;
-    
-    sunbeam.classList.add('active');
-    
-    // Remove class after animation completes
-    setTimeout(() => {
-        sunbeam.classList.remove('active');
-    }, 3000);
-}
-
-// Trigger sunbeam randomly between 15-45 seconds
-let sunbeamTimeoutId = null;
-
-function scheduleSunbeam() {
-    if (prefersReducedMotion || shouldUseLightEffects || !isPageVisible || !isHeroVisible || !document.querySelector('.sunbeam-flash')) return;
-    const delay = 15000 + Math.random() * 30000;
-    sunbeamTimeoutId = setTimeout(() => {
-        triggerSunbeam();
-        scheduleSunbeam();
-    }, delay);
-}
-
-function startSunbeamEffect() {
-    if (sunbeamTimeoutId || prefersReducedMotion || shouldUseLightEffects || !isPageVisible || !isHeroVisible) return;
-    sunbeamTimeoutId = setTimeout(scheduleSunbeam, 5000);
-}
-
-function stopSunbeamEffect() {
-    if (!sunbeamTimeoutId) return;
-    clearTimeout(sunbeamTimeoutId);
-    sunbeamTimeoutId = null;
-}
-
 // Start visual timers
 startSunsetIntensityUpdates();
-startSunbeamEffect();
 
 // Handle resize
 let resizeTimeout;
