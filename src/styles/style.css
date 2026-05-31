@@ -736,6 +736,9 @@ nav.scrolled {
 }
 
 .btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   font-family: var(--font-body);
   font-size: 0.875rem;
   font-weight: 500;
@@ -743,6 +746,7 @@ nav.scrolled {
   background: transparent;
   border: 1px solid var(--border-light);
   color: var(--text-primary);
+  text-decoration: none;
   cursor: pointer;
   letter-spacing: 0.03em;
   transition: all 0.3s var(--ease-out-expo);
@@ -827,6 +831,14 @@ nav.scrolled {
 
 .trust-logo:nth-child(4) {
   --trust-delay: 1.91s;
+}
+
+.trust-logo:nth-child(5) {
+  --trust-delay: 2.13s;
+}
+
+.trust-logo:nth-child(6) {
+  --trust-delay: 2.35s;
 }
 
 .trust-logo:hover {
@@ -2076,6 +2088,14 @@ footer {
 
   .trust-logo:nth-child(4) {
     --trust-delay: 1.44s;
+  }
+
+  .trust-logo:nth-child(5) {
+    --trust-delay: 1.57s;
+  }
+
+  .trust-logo:nth-child(6) {
+    --trust-delay: 1.70s;
   }
 
   .scenario-card {
