@@ -695,6 +695,9 @@ nav.scrolled {
 }
 
 .btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   font-family: var(--font-body);
   font-size: 0.875rem;
   font-weight: 600;
@@ -705,6 +708,7 @@ nav.scrolled {
   cursor: pointer;
   letter-spacing: 0.05em;
   text-transform: uppercase;
+  text-decoration: none;
   transition: all 0.3s var(--ease-out-expo);
   position: relative;
   overflow: hidden;
