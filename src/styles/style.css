@@ -1335,6 +1335,11 @@ nav.scrolled {
     filter 0.5s var(--ease-out-expo);
 }
 
+.leader-card[aria-labelledby="grant-name"] .leader-image {
+  object-fit: contain;
+  object-position: center center;
+}
+
 .leader-card:hover .leader-image {
   transform: scale(1.04);
   filter: saturate(1.05) contrast(1.03);
